@@ -15,56 +15,51 @@
 </head>
 
 <body>
-    <!-- Premium Intro Landing Page -->
+    <!-- Next-Gen Premium Landing Page (Complete Replacement) -->
     <div id="introPage" class="intro-overlay">
-        <!-- Top Navigation -->
-        <nav class="intro-nav">
-            <div class="intro-nav-logo">
-                <i class="fas fa-cloud"></i> CloudCompare AI
+        <!-- Floating Glass Navbar -->
+        <nav class="next-nav">
+            <div class="next-logo">
+                <i class="fas fa-microchip"></i> CLOUDCOMPARE <span>AI</span>
             </div>
-            <ul class="intro-nav-links">
-                <li><a href="#">Features</a></li>
-                <li><a href="#">Cloud Services</a></li>
-                <li><a href="#">AI Tools</a></li>
-                <li><a href="#">AI Recommendations</a></li>
-                <li><a href="#">Resources</a></li>
-                <li><a href="#">Pricing</a></li>
-            </ul>
-            <div class="intro-nav-actions">
-                <a href="login.html" class="nav-btn-link">Log In</a>
-                <button class="intro-btn primary small" onclick="enterDashboard()">Sign Up</button>
+            <div class="next-nav-links">
+                <a href="#">Engine</a>
+                <a href="#">Intelligence</a>
+                <a href="#">Architecture</a>
+                <a href="#">Pricing</a>
+            </div>
+            <div class="next-nav-auth">
+                <a href="login.html" class="next-login">LOG IN</a>
+                <button class="next-signup-btn" onclick="enterDashboard()">SIGN UP</button>
             </div>
         </nav>
 
-        <div class="intro-content">
-            <div class="hero-image-container">
-                <img src="./assets/hero-bg.png" alt="CloudCompare AI Hero" class="hero-image">
+        <main class="next-hero">
+            <div class="next-hero-left">
+                <div class="next-badge"><span>NEW</span> VERSION 2.0 IS LIVE</div>
+                <h1 class="next-title">THE FUTURE OF<br>CLOUD<br><span>INTELLIGENCE</span></h1>
+                <p class="next-description">Optimize your multi-cloud architecture with high-precision AI benchmarking. Compare AWS, Azure, GCP, and AI Models in one unified terminal.</p>
+                <div class="next-actions">
+                    <button class="next-btn primary" onclick="enterDashboard()">
+                        SIGN UP NOW <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="next-btn secondary" onclick="enterDashboard()">
+                        EXPLORE ENGINE <i class="fas fa-play"></i>
+                    </button>
+                </div>
+                <div class="next-stats">
+                    <div class="stat"><span class="val">10+</span><span class="lbl">PROVIDERS</span></div>
+                    <div class="stat"><span class="val">500+</span><span class="lbl">SERVICES</span></div>
+                    <div class="stat"><span class="val">AI</span><span class="lbl">INSIGHTS</span></div>
+                </div>
             </div>
-            <div class="intro-badge">AI-Powered Cloud & AI Service Comparison</div>
-            <h1 class="intro-title">CLOUDCOMPARE<br><span>AI</span></h1>
-            <p class="intro-subtitle">Compare Smarter. Build Faster.</p>
-            <p class="intro-description">Your intelligent platform to compare cloud services and AI tools, get AI recommendations, and build the right tech stack.</p>
-            
-            <div class="intro-actions">
-                <button class="intro-btn primary" onclick="enterDashboard()">
-                    Sign Up <i class="fas fa-arrow-right"></i>
-                </button>
-                <button class="intro-btn ghost" onclick="enterDashboard()">
-                    Explore Platform <i class="fas fa-play-circle"></i>
-                </button>
+            <div class="next-hero-right">
+                <div class="hero-visual-wrapper">
+                    <img src="./assets/hero-bg.png" alt="Cloud AI" class="hero-3d-asset">
+                    <div class="hero-glow-ring"></div>
+                </div>
             </div>
-        </div>
-
-        <div class="intro-footer-strip">
-            <span>TRUSTED BY DEVELOPERS & COMPANIES WORLDWIDE</span>
-            <div class="brand-strip">
-                <div class="brand"><i class="fab fa-aws"></i> <span>aws</span></div>
-                <div class="brand"><i class="fab fa-microsoft"></i> <span>Microsoft Azure</span></div>
-                <div class="brand"><i class="fab fa-google"></i> <span>Google Cloud</span></div>
-                <div class="brand"><i class="fas fa-cloud"></i> <span>ORACLE</span></div>
-                <div class="brand"><i class="fas fa-server"></i> <span>Alibaba Cloud</span></div>
-            </div>
-        </div>
+        </main>
 
         <div class="intro-background">
             <div class="glow-sphere"></div>
@@ -506,7 +501,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=11"></script>
 </body>
 
 </html>
