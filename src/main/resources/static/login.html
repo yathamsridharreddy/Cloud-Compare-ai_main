@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @keyframes unfold { from { opacity: 0; transform: perspective(1000px) rotateX(-15deg) scale(0.9); } to { opacity: 1; transform: perspective(1000px) rotateX(0) scale(1); } }
+        @keyframes borderGlow { 0%, 100% { border-color: rgba(212, 160, 23, 0.2); } 50% { border-color: #fbbf24; } }
+        
+        body { margin: 0; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         .auth-container {
             min-height: 100vh;
             display: flex;
@@ -18,196 +22,137 @@
             z-index: 10;
         }
         .auth-card {
-            background: rgba(30, 41, 59, 0.4);
+            background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 2.5rem;
+            border-radius: 24px;
+            padding: 3rem;
             width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
+            max-width: 440px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 160, 23, 0.1);
+            backdrop-filter: blur(20px);
+            animation: unfold 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
         }
         .auth-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
         .auth-header .logo-icon {
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: #d4a017;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
             display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(212, 160, 23, 0.4));
         }
         .auth-header h2 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
         .auth-header p {
             color: #94a3b8;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
         }
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #e2e8f0;
-            font-size: 0.9rem;
-            font-weight: 500;
+            margin-bottom: 0.6rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .form-control {
             width: 100%;
-            padding: 0.85rem 1rem;
-            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem 1.25rem;
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: 12px;
             color: white;
             font-family: inherit;
-            transition: all 0.2s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-sizing: border-box;
         }
         .form-control:focus {
             outline: none;
-            border-color: #d4a017;
-            box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.2);
+            border-color: #fbbf24;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.15);
+            transform: translateY(-2px);
         }
         .btn-auth {
             width: 100%;
-            padding: 0.85rem;
-            background: linear-gradient(135deg, #d4a017, #b8860b);
-            color: #0f172a;
+            padding: 1.1rem;
+            background: linear-gradient(135deg, #d4a017, #fbbf24);
+            color: #1a1408;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 1rem;
+            transition: all 0.4s;
+            margin-top: 1.5rem;
+            position: relative;
+            overflow: hidden;
         }
         .btn-auth:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(212, 160, 23, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(212, 160, 23, 0.4);
+        }
+        .btn-auth::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+        .btn-auth:hover::after {
+            left: 100%;
         }
         .auth-footer {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             text-align: center;
-            font-size: 0.9rem;
-            color: #94a3b8;
+            font-size: 1rem;
+            color: #64748b;
         }
         .auth-footer a {
-            color: #d4a017;
+            color: #fbbf24;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
+            transition: all 0.3s;
         }
         .auth-footer a:hover {
-            text-decoration: underline;
+            color: white;
+            text-shadow: 0 0 10px rgba(212, 160, 23, 0.5);
         }
         .alert {
             display: none;
-            padding: 0.8rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            animation: slideUp 0.4s ease-out;
         }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             color: #fca5a5;
         }
         .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
             color: #86efac;
         }
-        .forgot-password-link {
-            display: block;
-            text-align: right;
-            margin-top: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.85rem;
-        }
-        .forgot-password-link a {
-            color: #d4a017;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .forgot-password-link a:hover {
-            color: #f5d060;
-            text-decoration: underline;
-        }
-        .form-validation {
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
-            display: none;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        .form-validation.error {
-            color: #fca5a5;
-            display: flex;
-        }
-        .form-validation.success {
-            color: #86efac;
-            display: flex;
-        }
-        .form-validation i {
-            font-size: 0.7rem;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-        .modal.active {
-            display: flex;
-        }
-        .modal-content {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
-            position: relative;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        .modal-header h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 1.5rem;
-            transition: all 0.2s;
-        }
-        .modal-close:hover {
-            color: #d4a017;
-        }
-        .modal-description {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
+        .particle-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .particle { position: absolute; background: #d4a017; border-radius: 50%; opacity: 0.3; filter: blur(1px); animation: drift 20s linear infinite; }
+        @keyframes drift { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-100px) rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -448,6 +393,27 @@
                 closeForgotPasswordModal();
             }
         });
+
+        // UI EXCELLENCE: Particle Background
+        function initParticleSystem() {
+            const bg = document.createElement('div');
+            bg.className = 'particle-bg';
+            document.body.appendChild(bg);
+            
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 4 + 2;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                p.style.left = `${Math.random() * 100}%`;
+                p.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                p.style.animationDelay = `${Math.random() * 10}s`;
+                p.style.opacity = Math.random() * 0.5;
+                bg.appendChild(p);
+            }
+        }
+        initParticleSystem();
     </script>
 </body>
 </html>
