@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/login.html")).permitAll()
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/signup.html")).permitAll()
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/index.html")).permitAll()
+                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/dashboard.html")).permitAll()
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/style.css")).permitAll()
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/script.js")).permitAll()
                         .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/*.png")).permitAll()
