@@ -1155,3 +1155,109 @@ body.light-theme .rank-other {
 body.light-theme .logo-icon {
     color: white;
 }
+
+/* ============================================================
+   VISIT SERVICE / TRY TOOL NAVIGATION BUTTON
+   ============================================================ */
+.visit-service-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    padding: 10px 20px;
+    border: 1px solid rgba(212, 160, 23, 0.4);
+    border-radius: 10px;
+    background: rgba(212, 160, 23, 0.08);
+    color: var(--primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.visit-service-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(212, 160, 23, 0.15), rgba(245, 208, 96, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.visit-service-btn:hover {
+    background: rgba(212, 160, 23, 0.18);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(212, 160, 23, 0.2);
+    color: #fbbf24;
+    text-decoration: none;
+}
+
+.visit-service-btn:hover::before {
+    opacity: 1;
+}
+
+.visit-service-btn i {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.visit-service-btn:hover i {
+    transform: translateX(3px);
+}
+
+/* Table Service Link */
+.table-service-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    border-bottom: 1px dashed rgba(212, 160, 23, 0.3);
+    padding-bottom: 1px;
+}
+
+.table-service-link:hover {
+    color: #fbbf24;
+    border-bottom-color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+.table-service-link i {
+    margin-left: 4px;
+    transition: transform 0.2s ease;
+}
+
+.table-service-link:hover i {
+    transform: translateX(2px);
+}
+
+/* Light theme overrides for navigation buttons */
+body.light-theme .visit-service-btn {
+    background: rgba(184, 134, 11, 0.06);
+    border-color: rgba(184, 134, 11, 0.25);
+    color: #8b6914;
+}
+
+body.light-theme .visit-service-btn:hover {
+    background: rgba(184, 134, 11, 0.12);
+    border-color: #b8860b;
+    color: #b8860b;
+    box-shadow: 0 6px 24px rgba(184, 134, 11, 0.15);
+}
+
+body.light-theme .table-service-link {
+    color: #8b6914;
+    border-bottom-color: rgba(184, 134, 11, 0.2);
+}
+
+body.light-theme .table-service-link:hover {
+    color: #b8860b;
+    border-bottom-color: #b8860b;
+    text-shadow: none;
+}

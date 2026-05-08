@@ -73,6 +73,162 @@ const platformIcons = {
     'Alibaba': 'fas fa-server'
 };
 
+// ============================================================
+// SERVICE URL MAPPING — Real cloud provider product pages
+// ============================================================
+const serviceUrlMap = {
+    // ---- AWS ----
+    'AWS': {
+        // Compute
+        'EC2':            'https://aws.amazon.com/ec2/',
+        'Lambda':         'https://aws.amazon.com/lambda/',
+        'ECS':            'https://aws.amazon.com/ecs/',
+        'EKS':            'https://aws.amazon.com/eks/',
+        'Lightsail':      'https://aws.amazon.com/lightsail/',
+        'Fargate':        'https://aws.amazon.com/fargate/',
+        // Storage
+        'S3':             'https://aws.amazon.com/s3/',
+        'EBS':            'https://aws.amazon.com/ebs/',
+        'EFS':            'https://aws.amazon.com/efs/',
+        'Glacier':        'https://aws.amazon.com/s3/storage-classes/glacier/',
+        // Database
+        'RDS':            'https://aws.amazon.com/rds/',
+        'DynamoDB':       'https://aws.amazon.com/dynamodb/',
+        'Aurora':         'https://aws.amazon.com/rds/aurora/',
+        'Redshift':       'https://aws.amazon.com/redshift/',
+        'ElastiCache':    'https://aws.amazon.com/elasticache/',
+        // AI
+        'SageMaker':      'https://aws.amazon.com/sagemaker/',
+        'Bedrock':        'https://aws.amazon.com/bedrock/',
+        'Rekognition':    'https://aws.amazon.com/rekognition/',
+        'Comprehend':     'https://aws.amazon.com/comprehend/',
+        '_default':       'https://aws.amazon.com/'
+    },
+    // ---- GCP ----
+    'GCP': {
+        'Compute Engine':       'https://cloud.google.com/compute',
+        'Cloud Functions':      'https://cloud.google.com/functions',
+        'Cloud Run':            'https://cloud.google.com/run',
+        'GKE':                  'https://cloud.google.com/kubernetes-engine',
+        'Cloud Storage':        'https://cloud.google.com/storage',
+        'Persistent Disk':      'https://cloud.google.com/persistent-disk',
+        'Filestore':            'https://cloud.google.com/filestore',
+        'Cloud SQL':            'https://cloud.google.com/sql',
+        'Firestore':            'https://cloud.google.com/firestore',
+        'BigQuery':             'https://cloud.google.com/bigquery',
+        'Cloud Spanner':        'https://cloud.google.com/spanner',
+        'Bigtable':             'https://cloud.google.com/bigtable',
+        'Vertex AI':            'https://cloud.google.com/vertex-ai',
+        'Gemini':               'https://cloud.google.com/gemini',
+        'AutoML':               'https://cloud.google.com/automl',
+        '_default':             'https://cloud.google.com/'
+    },
+    // ---- Azure ----
+    'Azure': {
+        'Virtual Machines':     'https://azure.microsoft.com/en-us/products/virtual-machines',
+        'Functions':            'https://azure.microsoft.com/en-us/products/functions',
+        'AKS':                  'https://azure.microsoft.com/en-us/products/kubernetes-service',
+        'Container Instances':  'https://azure.microsoft.com/en-us/products/container-instances',
+        'Blob Storage':         'https://azure.microsoft.com/en-us/products/storage/blobs',
+        'Disk Storage':         'https://azure.microsoft.com/en-us/products/storage/disks',
+        'Files':                'https://azure.microsoft.com/en-us/products/storage/files',
+        'SQL Database':         'https://azure.microsoft.com/en-us/products/azure-sql/database',
+        'Cosmos DB':            'https://azure.microsoft.com/en-us/products/cosmos-db',
+        'Database for MySQL':   'https://azure.microsoft.com/en-us/products/mysql',
+        'Database for PostgreSQL': 'https://azure.microsoft.com/en-us/products/postgresql',
+        'Synapse':              'https://azure.microsoft.com/en-us/products/synapse-analytics',
+        'Azure AI':             'https://azure.microsoft.com/en-us/products/ai-services',
+        'OpenAI Service':       'https://azure.microsoft.com/en-us/products/ai-services/openai-service',
+        'Machine Learning':     'https://azure.microsoft.com/en-us/products/machine-learning',
+        '_default':             'https://azure.microsoft.com/'
+    },
+    // ---- OCI (Oracle Cloud) ----
+    'OCI': {
+        'Compute':              'https://www.oracle.com/cloud/compute/',
+        'Functions':            'https://www.oracle.com/cloud/cloud-native/functions/',
+        'OKE':                  'https://www.oracle.com/cloud/cloud-native/container-engine-kubernetes/',
+        'Object Storage':       'https://www.oracle.com/cloud/storage/object-storage/',
+        'Block Volume':         'https://www.oracle.com/cloud/storage/block-volumes/',
+        'File Storage':         'https://www.oracle.com/cloud/storage/file-storage/',
+        'Autonomous Database':  'https://www.oracle.com/autonomous-database/',
+        'MySQL':                'https://www.oracle.com/mysql/',
+        'NoSQL':                'https://www.oracle.com/database/nosql/',
+        'AI Services':          'https://www.oracle.com/artificial-intelligence/',
+        'Generative AI':        'https://www.oracle.com/artificial-intelligence/generative-ai/',
+        '_default':             'https://www.oracle.com/cloud/'
+    },
+    // ---- Alibaba Cloud ----
+    'Alibaba': {
+        'ECS':                  'https://www.alibabacloud.com/product/ecs',
+        'Function Compute':     'https://www.alibabacloud.com/product/function-compute',
+        'ACK':                  'https://www.alibabacloud.com/product/kubernetes',
+        'OSS':                  'https://www.alibabacloud.com/product/object-storage-service',
+        'NAS':                  'https://www.alibabacloud.com/product/nas',
+        'Block Storage':        'https://www.alibabacloud.com/product/disk',
+        'ApsaraDB RDS':        'https://www.alibabacloud.com/product/apsaradb-for-rds',
+        'PolarDB':              'https://www.alibabacloud.com/product/polardb',
+        'AnalyticDB':           'https://www.alibabacloud.com/product/analyticdb-for-mysql',
+        'PAI':                  'https://www.alibabacloud.com/product/machine-learning',
+        'Tongyi':               'https://www.alibabacloud.com/product/tongyi',
+        '_default':             'https://www.alibabacloud.com/'
+    }
+};
+
+// AI Tool URLs — direct product pages
+const aiToolUrlMap = {
+    'ChatGPT':      'https://chat.openai.com/',
+    'Claude':       'https://claude.ai/',
+    'Gemini':       'https://gemini.google.com/',
+    'Copilot':      'https://copilot.microsoft.com/',
+    'Perplexity':   'https://www.perplexity.ai/',
+    'Midjourney':   'https://www.midjourney.com/',
+    'DALL-E':       'https://openai.com/dall-e-3',
+    'Stable Diffusion': 'https://stability.ai/',
+    'Runway':       'https://runwayml.com/',
+    'Jasper':       'https://www.jasper.ai/',
+    'Notion AI':    'https://www.notion.so/product/ai',
+    'GitHub Copilot': 'https://github.com/features/copilot',
+    'Cursor':       'https://cursor.sh/',
+    'Suno':         'https://suno.com/',
+    'ElevenLabs':   'https://elevenlabs.io/',
+    'Gamma':        'https://gamma.app/',
+    'Tome':         'https://tome.app/',
+    'Julius AI':    'https://julius.ai/'
+};
+
+/**
+ * Resolves the best URL for a given cloud service.
+ * Matches service_name against known keywords for the provider.
+ */
+function getServiceUrl(platform, serviceName) {
+    const providerMap = serviceUrlMap[platform];
+    if (!providerMap) return null;
+
+    // Try exact match first
+    for (const [keyword, url] of Object.entries(providerMap)) {
+        if (keyword === '_default') continue;
+        if (serviceName && serviceName.toLowerCase().includes(keyword.toLowerCase())) {
+            return url;
+        }
+    }
+
+    // Fallback to provider default
+    return providerMap['_default'] || null;
+}
+
+/**
+ * Resolves the best URL for a given AI tool.
+ */
+function getAiToolUrl(toolName) {
+    if (!toolName) return null;
+    for (const [name, url] of Object.entries(aiToolUrlMap)) {
+        if (toolName.toLowerCase().includes(name.toLowerCase())) {
+            return url;
+        }
+    }
+    return null;
+}
+
 // Category configuration
 const categoryConfig = {
     compute: {
@@ -363,6 +519,14 @@ function displayRecommendations(services) {
         else if (index === 1) rankBadgeStyle = `background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(100, 116, 139, 0.2)); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.5);`; // Silver
         else if (index === 2) rankBadgeStyle = `background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.2)); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.5);`; // Bronze
 
+        // Resolve the real cloud provider URL for this service
+        const serviceUrl = getServiceUrl(rec.platform, rec.service_name);
+        const visitBtnHtml = serviceUrl
+            ? `<a href="${serviceUrl}" target="_blank" rel="noopener noreferrer" class="visit-service-btn" style="border-color: ${adjustColorOpacity(color, 0.5)}; color: ${color};">
+                   <i class="fas fa-external-link-alt"></i> Visit Service
+               </a>`
+            : '';
+
         const card = document.createElement('div');
         card.className = 'recommendation-card';
         card.innerHTML = `
@@ -383,6 +547,7 @@ function displayRecommendations(services) {
                         <span class="stat-value performance" style="font-size: 1.25rem; color: ${color};">${rec.performanceLevel}</span>
                     </div>
                 </div>
+                ${visitBtnHtml}
             </div>
         `;
         grid.appendChild(card);
@@ -1067,6 +1232,12 @@ function displayTable(services) {
         if (s.performanceLevel === "High") perfClass = "perf-high";
         else if (s.performanceLevel === "Medium") perfClass = "perf-medium";
 
+        // Resolve the real cloud provider URL for this service
+        const tableServiceUrl = getServiceUrl(s.platform, s.service_name);
+        const serviceNameHtml = tableServiceUrl
+            ? `<a href="${tableServiceUrl}" target="_blank" rel="noopener noreferrer" class="table-service-link">${s.service_name} <i class="fas fa-external-link-alt" style="font-size: 0.7em; opacity: 0.6;"></i></a>`
+            : s.service_name;
+
         row.innerHTML = `
             <td><span class="rank-badge ${rankClass}">#${s.rank}</span></td>
             <td>
@@ -1074,7 +1245,7 @@ function displayTable(services) {
                     ${s.platform}
                 </span>
             </td>
-            <td>${s.service_name}</td>
+            <td>${serviceNameHtml}</td>
             <td>${s.cpu || '-'}</td>
             <td>${s.ram || '-'}</td>
             <td>${s.storage || '-'}</td>
@@ -1280,6 +1451,14 @@ function displayAiRecommendations(tools) {
         else if (index === 1) rankBadgeStyle = `background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(100, 116, 139, 0.2)); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.5);`;
         else if (index === 2) rankBadgeStyle = `background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.2)); color: #cd7f32; border: 1px solid rgba(205, 127, 50, 0.5);`;
 
+        // Resolve AI tool URL
+        const toolUrl = getAiToolUrl(tool.tool_name);
+        const tryToolBtnHtml = toolUrl
+            ? `<a href="${toolUrl}" target="_blank" rel="noopener noreferrer" class="visit-service-btn" style="border-color: rgba(251, 191, 36, 0.5); color: #fbbf24;">
+                   <i class="fas fa-external-link-alt"></i> Try Tool
+               </a>`
+            : '';
+
         const card = document.createElement('div');
         card.className = 'recommendation-card';
         card.innerHTML = `
@@ -1305,6 +1484,7 @@ function displayAiRecommendations(tools) {
                         <span class="stat-value performance" style="font-size: 1.25rem;">${tool.score.toFixed(1)}/10</span>
                     </div>
                 </div>
+                ${tryToolBtnHtml}
             </div>
         `;
         grid.appendChild(card);
