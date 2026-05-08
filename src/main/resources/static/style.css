@@ -1533,18 +1533,17 @@ body.light-theme .provider-chip.active {
    ========================================================================== */
 
 #introPage {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
     background: #000;
     z-index: 999999;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     font-family: 'Outfit', sans-serif;
-    overflow-y: auto;
-    padding: 100px 20px;
+    padding: 120px 20px;
     box-sizing: border-box;
 }
 
