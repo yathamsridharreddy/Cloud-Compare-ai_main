@@ -390,8 +390,43 @@
         </div>
     </div>
 
+    <!-- AI Configuration Onboarding Overlay -->
+    <div id="configOverlay" class="modal-overlay" style="display: none;">
+        <div class="modal-content premium-card onboarding-card">
+            <div class="modal-header">
+                <h2 style="color: #fbbf24;"><i class="fas fa-shield-alt"></i> AI Engine Activation Required</h2>
+            </div>
+            <div class="modal-body">
+                <p>To enable <strong>Live AI Architectural Analysis</strong>, you must provide your Groq API keys. This ensures high-availability and zero-latency recommendations.</p>
+                
+                <div class="setup-steps">
+                    <div class="step">
+                        <span class="step-num">1</span>
+                        <p>Get your free keys at <a href="https://console.groq.com/keys" target="_blank">console.groq.com</a></p>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">2</span>
+                        <p>Set them as an environment variable on your machine:</p>
+                        <div class="code-box">
+                            <code id="setupCommand">$env:GROK_API_KEYS="your_key_1,your_key_2,your_key_3"</code>
+                            <button class="copy-btn" onclick="copySetupCommand()"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">3</span>
+                        <p>Restart the application server to apply changes.</p>
+                    </div>
+                </div>
+                
+                <button class="compare-btn mt-4" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i> I've Updated My Config
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=5"></script>
 </body>
 
 </html>

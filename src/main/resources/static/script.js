@@ -583,7 +583,13 @@ async function compare() {
     } catch (error) {
         console.error("Compare error:", error);
         hideLoading();
-        showError("Failed to compare services. Please try again.\n" + error.message);
+        
+        // PHASE 3: Config Onboarding Check
+        if (error.message.includes("Configuration Missing") || error.message.includes("YOUR_GROQ_API_KEY")) {
+            document.getElementById('configOverlay').style.display = 'flex';
+        } else {
+            showError("Failed to compare services. Please try again.\n" + error.message);
+        }
     } finally {
         isComparing = false;
         const compareBtn = document.querySelector('.compare-btn');
@@ -1737,4 +1743,14 @@ function exportToCSV() {
     a.setAttribute('href', url);
     a.setAttribute('download', 'CloudCompare_Architect_Report.csv');
     a.click();
+}
+
+function copySetupCommand() {
+    const command = document.getElementById('setupCommand').innerText;
+    navigator.clipboard.writeText(command);
+    const btn = document.querySelector('.copy-btn');
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+    }, 2000);
 }
