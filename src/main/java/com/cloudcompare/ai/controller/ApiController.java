@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -63,6 +64,7 @@ public class ApiController {
     }
 
     @PostMapping("/compare")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<?>> compare(@Valid @RequestBody CompareRequest req) {
         String category = req.getCategory();
         String svcType = (req.getServiceType() != null && !"all".equals(req.getServiceType()))
@@ -113,6 +115,7 @@ public class ApiController {
     }
 
     @PostMapping("/ai-compare")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<?>> compareAiTools(@Valid @RequestBody AiCompareRequest req) {
         String purpose = req.getPurpose();
         log.info("AI Analysis request for: {}", purpose);
