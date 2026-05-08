@@ -1,0 +1,33 @@
+services:
+  app:
+    image: ${DOCKER_IMAGE}
+    container_name: cloudcompare-ai
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=cloudcompare
+      - DB_USER=root
+      - DB_PASSWORD=Ap27@7054
+      - GROK_API_KEYS=${GROK_API_KEYS}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.3
+    container_name: cloudcompare-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=cloudcompare
+      - MYSQL_ROOT_PASSWORD=Ap27@7054
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

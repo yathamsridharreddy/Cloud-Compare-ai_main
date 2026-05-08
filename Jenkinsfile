@@ -2,85 +2,103 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "cloudcompare-ai"
-        DOCKER_REGISTRY = "raghavendra2006"
-        // Credentials IDs - ensure these exist in Jenkins
-        SONAR_CRED_ID = 'sonar-token'
-        DOCKER_CRED_ID = 'docker-hub-creds'
+        // --- Docker Properties ---
+        DOCKERHUB_CREDENTIALS = 'dockerhubcred'
+        DOCKER_IMAGE = 'raghavendra2006/cloudcompare-ai'
+        DOCKER_TAG = "v${env.BUILD_ID}"
+        
+        // --- EC2 Deployment Properties ---
+        EC2_USER = 'ubuntu'
+        EC2_IP = '18.209.5.124' // Update this to your target EC2 IP if different
+        SSH_CREDENTIALS_ID = 'ec2-pem-key'
+    }
+
+    tools {
+        maven 'cseMaven' // Ensure Maven is configured as 'cseMaven' in Global Tool Configuration
+        jdk 'javacse'    // Ensure JDK 17 or 21 is configured as 'javacse'
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Clone Code') {
             steps {
+                echo 'Cloning from Git repository...'
                 checkout scm
             }
         }
 
         stage('Build Jar') {
             steps {
-                // Use bat for Windows Jenkins or sh for Linux
-                script {
-                    if (isUnix()) {
-                        sh './mvnw clean package -DskipTests'
-                    } else {
-                        bat 'mvnw.cmd clean package -DskipTests'
-                    }
-                }
+                echo 'Building Spring Boot application...'
+                // Using wrapper mvnw.cmd for better compatibility
+                bat 'mvnw.cmd clean package'
             }
         }
 
         stage('Sonar Analysis') {
             steps {
-                withCredentials([string(credentialsId: SONAR_CRED_ID, variable: 'SONAR_TOKEN')]) {
-                    script {
-                        def sonarCmd = "mvn sonar:sonar -Dsonar.projectKey=cloud-compare-ai -Dsonar.login=${SONAR_TOKEN}"
-                        if (isUnix()) {
-                            sh sonarCmd
-                        } else {
-                            bat sonarCmd
-                        }
-                    }
+                // Using 'SonarCse' as requested
+                withSonarQubeEnv('SonarCse') {
+                    bat 'mvnw.cmd sonar:sonar -Dsonar.projectKey=cloud-compare-ai'
                 }
             }
         }
 
-        stage('Docker Build & Tag') {
+        stage('Docker Build') {
             steps {
-                script {
-                    def tag = "${env.BUILD_NUMBER}"
-                    sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${tag} ."
-                    sh "docker tag ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${tag} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
+                echo 'Building Docker image...'
+                bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                echo 'Logging into DockerHub...'
+                withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    // Windows CMD syntax for environment variables
+                    bat 'echo %DOCKER_PASS%| docker login -u %DOCKER_USER% --password-stdin'
                 }
             }
         }
 
         stage('Docker Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: DOCKER_CRED_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                    sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
-                    sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
-                }
+                echo 'Pushing image to DockerHub...'
+                bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                bat "docker push ${DOCKER_IMAGE}:latest"
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to EC2') {
             steps {
-                echo "Deploying version ${env.BUILD_NUMBER}..."
+                echo 'Deploying application to EC2 instance...'
+                withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CREDENTIALS_ID, keyFileVariable: 'SSH_KEY')]) {
+                    // Fix Windows SSH key permissions
+                    bat 'for /f "delims=" %%a in (\'whoami\') do icacls "%SSH_KEY%" /inheritance:r /grant "%%a:F"'
+                    bat 'icacls "%SSH_KEY%" /remove "BUILTIN\\Users" || exit 0'
+
+                    // Copy docker-compose.yml to EC2 Server
+                    bat "scp -o StrictHostKeyChecking=no -i \"%SSH_KEY%\" docker-compose.yml ${EC2_USER}@${EC2_IP}:~/docker-compose.yml"
+                    
+                    // Run deployment via SSH
+                    bat """
+                        ssh -o StrictHostKeyChecking=no -i "%SSH_KEY%" ${EC2_USER}@${EC2_IP} "export DOCKER_IMAGE=${DOCKER_IMAGE}:latest && sudo -E docker compose down && sudo -E docker compose pull && sudo -E docker compose up -d"
+                    """
+                }
             }
         }
     }
 
     post {
+        always {
+            echo 'Cleaning up Jenkins workspace...'
+            cleanWs()
+        }
         success {
-            echo 'Build and Deployment Successful!'
+            echo 'Pipeline completed successfully! CloudCompare AI is live.'
         }
         failure {
-            echo 'Build Failed. Please check the logs above.'
-        }
-        cleanup {
-            // Safer way to clean workspace
-            deleteDir()
+            echo 'Pipeline failed! Please check the logs in Jenkins.'
         }
     }
 }
