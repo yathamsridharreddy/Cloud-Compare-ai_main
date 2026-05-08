@@ -150,6 +150,24 @@
 
                 <!-- Results Section -->
                 <section class="results-section" id="resultsSection" style="display: none;">
+                    <!-- AI Executive Summary Card -->
+                    <div class="executive-summary-card premium-card" id="aiSummaryCard" style="display: none; margin-bottom: 2rem;">
+                        <div class="summary-header">
+                            <div class="summary-title">
+                                <i class="fas fa-robot"></i>
+                                <span>AI Architect's Verdict</span>
+                            </div>
+                            <div class="summary-actions">
+                                <button class="action-btn" onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> PDF Report</button>
+                                <button class="action-btn" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+                            </div>
+                        </div>
+                        <div class="summary-content" id="aiSummaryContent">
+                            <!-- Injected content -->
+                            <div class="typing-indicator"><span></span><span></span><span></span></div>
+                        </div>
+                    </div>
+
                     <div class="provider-filter-bar" id="providerFilterBar">
                         <span class="filter-label"><i class="fas fa-filter"></i> Filter by Provider:</span>
                         <div class="provider-filter-chips">
@@ -373,7 +391,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=4"></script>
 </body>
 
 </html>

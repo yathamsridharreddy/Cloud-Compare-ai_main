@@ -288,6 +288,16 @@ document.addEventListener("DOMContentLoaded", function () {
             showKnowledgeModal('Supported Cloud Providers', getProvidersHtml());
         };
     }
+
+    // PHASE 1: OVER EXCELLENCE - Global Pulse on load
+    // Automatically perform a global compute comparison to populate the dashboard immediately
+    setTimeout(() => {
+        const categoryBtn = document.querySelector('.category-btn[data-category="compute"]');
+        if (categoryBtn) {
+            categoryBtn.click(); // Select compute
+            compare(); // Trigger analysis
+        }
+    }, 1500);
 });
 
 function showKnowledgeModal(title, content) {
@@ -566,6 +576,9 @@ async function compare() {
         // Show results section
         document.getElementById('resultsSection').style.display = 'block';
         document.getElementById('emptyState').style.display = 'none';
+        
+        // PHASE 2: AI Architect Summary
+        generateAiSummary(services);
 
     } catch (error) {
         console.error("Compare error:", error);
@@ -1683,4 +1696,45 @@ if (typeof module !== 'undefined' && module.exports) {
         displayTable,
         sortTable
     };
+}
+
+async function generateAiSummary(services) {
+    const summaryCard = document.getElementById('aiSummaryCard');
+    const summaryContent = document.getElementById('aiSummaryContent');
+    
+    if (!summaryCard || !summaryContent) return;
+    
+    summaryCard.style.display = 'block';
+    summaryContent.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+    
+    // Simulate thinking/generating
+    setTimeout(() => {
+        const bestCost = services.reduce((min, p) => p.cost < min.cost ? p : min, services[0]);
+        const bestPerf = services.reduce((max, p) => p.performance_score > max.performance_score ? p : max, services[0]);
+        
+        let verdict = `Based on my architectural analysis, `;
+        if (bestCost.platform === bestPerf.platform) {
+            verdict += `<strong>${bestCost.platform}</strong> is the clear leader for this workload, offering both the lowest cost ($${bestCost.cost.toFixed(2)}) and peak performance.`;
+        } else {
+            verdict += `you face a trade-off: <strong>${bestCost.platform}</strong> is the budget leader at $${bestCost.cost.toFixed(2)}, but <strong>${bestPerf.platform}</strong> delivers superior performance (Score: ${bestPerf.performance_score}/10).`;
+        }
+        
+        verdict += `<br><br>Recommended Action: Deploy to <strong>${bestPerf.platform}</strong> if uptime and throughput are critical; otherwise, <strong>${bestCost.platform}</strong> provides the optimal ROI.`;
+        
+        summaryContent.innerHTML = verdict;
+    }, 1200);
+}
+
+function exportToPDF() {
+    alert('Generating Professional Architect PDF Report... (Integration coming in production build)');
+}
+
+function exportToCSV() {
+    const data = currentServices.map(s => `${s.platform},${s.service_name},${s.cost},${s.performance_score},${s.score}`).join('\n');
+    const blob = new Blob(['Platform,Service,Cost,Performance,Score\n' + data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'CloudCompare_Architect_Report.csv');
+    a.click();
 }

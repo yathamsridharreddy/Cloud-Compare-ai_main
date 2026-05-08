@@ -49,7 +49,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception e) {
-                logger.warn("User not found or token invalid: " + e.getMessage());
+                // EXCELLENCE: Use debug level for user lookup failures to keep logs clean for public access
+                logger.debug("User not found or token invalid: " + e.getMessage());
             }
         }
         filterChain.doFilter(request, response);

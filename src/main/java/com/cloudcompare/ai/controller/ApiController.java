@@ -94,7 +94,11 @@ public class ApiController {
 
         } catch (Exception err) {
             log.error("Comparison failed: {}", err.getMessage());
-            return ResponseEntity.status(502).body(ApiResponse.error("Live AI comparison failed: " + err.getMessage()));
+            String errorMsg = err.getMessage();
+            if (errorMsg != null && errorMsg.contains("YOUR_GROQ_API_KEY")) {
+                errorMsg = "AI Engine Configuration Missing. Please set the GROK_API_KEYS environment variable to enable live analysis.";
+            }
+            return ResponseEntity.status(502).body(ApiResponse.error(errorMsg));
         }
     }
 
