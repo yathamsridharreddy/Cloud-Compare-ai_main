@@ -123,11 +123,11 @@
                                 </select>
                             </div>
                             <div class="input-group full-width" style="margin-top: 1rem;">
-                                <label><i class="fas fa-filter"></i> Specific Service Filter</label>
-                                <select id="serviceTypeSelect"
-                                    style="width: 100%; padding: 0.8rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white; font-family: 'Inter', sans-serif;">
-                                    <option value="all">All Types</option>
-                                </select>
+                                <label><i class="fas fa-filter"></i> Specific Service Types</label>
+                                <div id="serviceTypeGrid" class="service-type-grid">
+                                    <!-- Dynamically filled with buttons -->
+                                </div>
+                                <input type="hidden" id="serviceTypeSelect" value="all">
                             </div>
                             <div class="input-group">
                                 <label><i class="fas fa-sort-amount-up"></i> Priority</label>
@@ -148,6 +148,17 @@
 
                 <!-- Results Section -->
                 <section class="results-section" id="resultsSection" style="display: none;">
+                    <div class="provider-filter-bar" id="providerFilterBar">
+                        <span class="filter-label"><i class="fas fa-filter"></i> Filter by Provider:</span>
+                        <div class="provider-filter-chips">
+                            <button class="provider-chip active" data-provider="all">All Providers</button>
+                            <button class="provider-chip" data-provider="AWS"><i class="fab fa-aws"></i> AWS</button>
+                            <button class="provider-chip" data-provider="GCP"><i class="fab fa-google"></i> GCP</button>
+                            <button class="provider-chip" data-provider="Azure"><i class="fab fa-microsoft"></i> Azure</button>
+                            <button class="provider-chip" data-provider="OCI"><i class="fas fa-cloud"></i> OCI</button>
+                            <button class="provider-chip" data-provider="Alibaba"><i class="fas fa-server"></i> Alibaba</button>
+                        </div>
+                    </div>
                     <!-- Top Options by Cloud -->
                     <div class="recommendations-grid" id="recommendationsGrid">
                         <!-- Cards will be injected dynamically here -->
@@ -336,11 +347,11 @@
         <footer class="footer">
             <p>© 2026 CloudCompare AI - Multi-Cloud Service Recommendation System</p>
             <div class="provider-logos">
-                <span class="provider-badge aws"><i class="fab fa-aws"></i> AWS</span>
-                <span class="provider-badge gcp"><i class="fab fa-google"></i> GCP</span>
-                <span class="provider-badge azure"><i class="fab fa-microsoft"></i> Azure</span>
-                <span class="provider-badge oci"><i class="fas fa-cloud"></i> Oracle Cloud</span>
-                <span class="provider-badge alibaba"><i class="fas fa-server"></i> Alibaba Cloud</span>
+                <a href="https://aws.amazon.com/" target="_blank" rel="noopener noreferrer" class="provider-badge aws"><i class="fab fa-aws"></i> AWS</a>
+                <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer" class="provider-badge gcp"><i class="fab fa-google"></i> GCP</a>
+                <a href="https://azure.microsoft.com/" target="_blank" rel="noopener noreferrer" class="provider-badge azure"><i class="fab fa-microsoft"></i> Azure</a>
+                <a href="https://www.oracle.com/cloud/" target="_blank" rel="noopener noreferrer" class="provider-badge oci"><i class="fas fa-cloud"></i> Oracle Cloud</a>
+                <a href="https://www.alibabacloud.com/" target="_blank" rel="noopener noreferrer" class="provider-badge alibaba"><i class="fas fa-server"></i> Alibaba Cloud</a>
             </div>
         </footer>
     </div>

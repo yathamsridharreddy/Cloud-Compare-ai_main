@@ -269,6 +269,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Load service types for default category
     loadServiceTypes(currentCategory);
+    
+    // EXCELLENCE: Initialize results filters
+    setupProviderFilters();
 });
 
 // Check auth state
@@ -331,21 +334,56 @@ async function loadServiceTypes(category) {
         if (res.ok) {
             const result = await res.json();
             const types = result.data || [];
-            const select = document.getElementById('serviceTypeSelect');
-            if (!select) return;
+            const grid = document.getElementById('serviceTypeGrid');
+            const hiddenInput = document.getElementById('serviceTypeSelect');
+            if (!grid) return;
 
-            select.innerHTML = '<option value="all">All Types</option>';
+            grid.innerHTML = '';
+            
+            // Add "All" button
+            const allBtn = document.createElement('button');
+            allBtn.className = 'type-btn active';
+            allBtn.innerHTML = '<i class="fas fa-layer-group"></i> All Types';
+            allBtn.onclick = () => selectType('all', allBtn);
+            grid.appendChild(allBtn);
 
             types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type.value || type.id;
-                option.textContent = type.label || type.name;
-                select.appendChild(option);
+                const btn = document.createElement('button');
+                btn.className = 'type-btn';
+                const typeLabel = type.label || type.name;
+                const typeValue = type.value || type.id;
+                
+                // Simple icon mapping
+                let icon = 'fa-tag';
+                if (typeLabel.toLowerCase().includes('general')) icon = 'fa-microchip';
+                else if (typeLabel.toLowerCase().includes('compute')) icon = 'fa-cogs';
+                else if (typeLabel.toLowerCase().includes('memory')) icon = 'fa-memory';
+                else if (typeLabel.toLowerCase().includes('storage')) icon = 'fa-hdd';
+                else if (typeLabel.toLowerCase().includes('gpu')) icon = 'fa-vr-cardboard';
+                
+                btn.innerHTML = `<i class="fas ${icon}"></i> ${typeLabel}`;
+                btn.onclick = () => selectType(typeValue, btn);
+                grid.appendChild(btn);
             });
+            
+            // Trigger initial compare if needed or update hidden input
+            hiddenInput.value = 'all';
         }
     } catch (error) {
         console.error('Error loading service types:', error);
     }
+}
+
+function selectType(val, btn) {
+    const hiddenInput = document.getElementById('serviceTypeSelect');
+    hiddenInput.value = val;
+    
+    // Update UI active state
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // EXCELLENCE: Auto-trigger comparison
+    compare();
 }
 
 // Setup category buttons
@@ -360,7 +398,10 @@ function setupCategoryButtons() {
             // Update current category
             currentCategory = this.dataset.category;
             // Load specific service types for this category
-            loadServiceTypes(currentCategory);
+            loadServiceTypes(currentCategory).then(() => {
+                // EXCELLENCE: Auto-trigger comparison on category change
+                compare();
+            });
         });
     });
 }
@@ -1312,6 +1353,7 @@ function displayProviderStats(stats) {
     grid.innerHTML = '';
     stats.forEach(stat => {
         const card = document.createElement('div');
+        card.className = 'provider-stat-card';
         card.style.background = 'rgba(15, 23, 42, 0.6)';
         card.style.border = '1px solid rgba(255, 255, 255, 0.05)';
         card.style.borderRadius = '12px';
@@ -1319,6 +1361,10 @@ function displayProviderStats(stats) {
         card.style.display = 'flex';
         card.style.flexDirection = 'column';
         card.style.gap = '0.5rem';
+        
+        // EXCELLENCE: Make stat cards clickable filters
+        card.title = `Click to filter results for ${stat.platform}`;
+        card.onclick = () => filterByProvider(stat.platform);
 
         card.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -1341,6 +1387,55 @@ function displayProviderStats(stats) {
             </div>
         `;
         grid.appendChild(card);
+    });
+}
+
+// EXCELLENCE: Provider Filtering Logic
+function filterByProvider(platform) {
+    console.log("Filtering results for provider:", platform);
+    
+    // Update quick-filter chips UI
+    const chips = document.querySelectorAll('.provider-chip');
+    chips.forEach(chip => {
+        if (chip.dataset.provider === platform) chip.classList.add('active');
+        else chip.classList.remove('active');
+    });
+
+    if (!currentServices || currentServices.length === 0) return;
+
+    let filtered = [];
+    if (platform === 'all') {
+        filtered = currentServices;
+    } else {
+        filtered = currentServices.filter(s => s.platform === platform);
+    }
+
+    // Refresh display with filtered data
+    displayRecommendations(filtered);
+    displayTable(filtered);
+    
+    // Scroll to results
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// EXCELLENCE: Initialize results filters
+function setupProviderFilters() {
+    const chips = document.querySelectorAll('.provider-chip');
+    chips.forEach(chip => {
+        chip.onclick = () => filterByProvider(chip.dataset.provider);
+    });
+
+    // Also hook up footer links to trigger filter (stay in app)
+    const footerBadges = document.querySelectorAll('.footer .provider-badge');
+    footerBadges.forEach(badge => {
+        badge.addEventListener('click', function(e) {
+            const provider = this.textContent.trim().split(' ')[0]; // AWS, GCP, Azure, etc.
+            // If results are visible, filter them
+            if (document.getElementById('resultsSection').style.display !== 'none') {
+                e.preventDefault(); // Don't navigate away if we have results
+                filterByProvider(provider);
+            }
+        });
     });
 }
 

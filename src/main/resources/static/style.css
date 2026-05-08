@@ -1261,3 +1261,152 @@ body.light-theme .table-service-link:hover {
     border-bottom-color: #b8860b;
     text-shadow: none;
 }
+
+/* ============================================================
+   SERVICE TYPE GRID & PROVIDER FILTER STYLES
+   ============================================================ */
+.service-type-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    background: rgba(15, 23, 42, 0.2);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.type-btn {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.type-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.type-btn.active {
+    background: var(--gradient);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(212, 160, 23, 0.3);
+}
+
+/* Provider Filter Bar */
+.provider-filter-bar {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 12px 20px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.filter-label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.provider-filter-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+}
+
+.provider-filter-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.provider-chip {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 6px 14px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.provider-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.provider-chip.active {
+    background: white;
+    color: #0f172a;
+    border-color: white;
+}
+
+/* Clickable Stats Cards */
+#providerStatsGrid .provider-stat-card {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#providerStatsGrid .provider-stat-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(212, 160, 23, 0.4) !important;
+    background: rgba(212, 160, 23, 0.05) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Light Theme Overrides */
+body.light-theme .service-type-grid {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .type-btn {
+    background: white;
+    border-color: rgba(184, 134, 11, 0.15);
+    color: #6b5c3e;
+}
+
+body.light-theme .type-btn:hover {
+    background: rgba(184, 134, 11, 0.05);
+    color: #1a1408;
+}
+
+body.light-theme .provider-filter-bar {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(184, 134, 11, 0.1);
+}
+
+body.light-theme .provider-chip {
+    background: white;
+    border-color: rgba(184, 134, 11, 0.15);
+    color: #6b5c3e;
+}
+
+body.light-theme .provider-chip.active {
+    background: #1a1408;
+    color: white;
+    border-color: #1a1408;
+}
