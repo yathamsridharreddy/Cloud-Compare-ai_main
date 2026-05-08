@@ -1391,55 +1391,68 @@ function displayPlatformCharts(services) {
     });
 }
 
-// Display results table
+// Display results in Telemetry Grid
 function displayTable(services) {
-    const tbody = document.getElementById('resultsBody');
+    const grid = document.getElementById('detailedTelemetryGrid');
+    if (!grid) return;
 
-    // Clear existing rows
-    tbody.innerHTML = "";
+    // Clear existing cards
+    grid.innerHTML = "";
 
-    // Add rows for each service
+    // Add cards for each service
     services.forEach(s => {
-        const row = document.createElement("tr");
-
-        // Get rank badge class
-        let rankClass = "rank-other";
-        if (s.rank === 1) rankClass = "rank-1";
-        else if (s.rank === 2) rankClass = "rank-2";
-        else if (s.rank === 3) rankClass = "rank-3";
-
-        // Get performance class
-        let perfClass = "perf-low";
-        if (s.performanceLevel === "High") perfClass = "perf-high";
-        else if (s.performanceLevel === "Medium") perfClass = "perf-medium";
+        const card = document.createElement("div");
+        card.className = "telemetry-card";
 
         // Resolve the real cloud provider URL for this service
-        const tableServiceUrl = getServiceUrl(s.platform, s.service_name);
-        const serviceNameHtml = tableServiceUrl
-            ? `<a href="${tableServiceUrl}" target="_blank" rel="noopener noreferrer" class="table-service-link">${s.service_name} <i class="fas fa-external-link-alt" style="font-size: 0.7em; opacity: 0.6;"></i></a>`
-            : s.service_name;
+        const serviceUrl = getServiceUrl(s.platform, s.service_name);
+        
+        card.innerHTML = `
+            <div class="t-header">
+                <div class="t-platform-info">
+                    <span class="t-rank-pill">RANK #${s.rank}</span>
+                    <span class="t-provider-badge" style="background: ${platformColors[s.platform]}">${s.platform}</span>
+                </div>
+                <div class="t-score-box">
+                    <span class="t-score-val">${s.score.toFixed(1)}</span>
+                    <span class="t-score-lbl">INTELLIGENCE</span>
+                </div>
+            </div>
 
-        row.innerHTML = `
-            <td><span class="rank-badge ${rankClass}">#${s.rank}</span></td>
-            <td>
-                <span class="platform-badge" style="background: ${platformColors[s.platform]}">
-                    ${s.platform}
-                </span>
-            </td>
-            <td>${serviceNameHtml}</td>
-            <td>${s.cpu || '-'}</td>
-            <td>${s.ram || '-'}</td>
-            <td>${s.storage || '-'}</td>
-            <td><strong>$${s.cost_per_hour.toFixed(4)}</strong></td>
-            <td><strong>$${s.cost_per_day.toFixed(2)}</strong></td>
-            <td><strong>$${s.cost_per_week.toFixed(2)}</strong></td>
-            <td><strong>$${s.cost_per_month.toFixed(2)}</strong></td>
-            <td><span class="${perfClass}">${s.performanceLevel}</span></td>
-            <td>${(s.popularity_score || 5).toFixed(1)}/10</td>
-            <td><strong>${s.score.toFixed(1)}</strong></td>
+            <h3 class="t-service-name">${s.service_name}</h3>
+
+            <div class="t-metrics">
+                <div class="t-metric">
+                    <span class="val">${s.cpu || 'Auto'}</span>
+                    <span class="lbl">CPU</span>
+                </div>
+                <div class="t-metric">
+                    <span class="val">${s.ram || 'Auto'}</span>
+                    <span class="lbl">RAM</span>
+                </div>
+                <div class="t-metric">
+                    <span class="val">${s.performanceLevel}</span>
+                    <span class="lbl">PERF</span>
+                </div>
+            </div>
+
+            <div class="t-costs">
+                <div class="t-cost-row">
+                    <span class="l">Hourly Rate</span>
+                    <span class="v">$${s.cost_per_hour.toFixed(4)}</span>
+                </div>
+                <div class="t-cost-row">
+                    <span class="l">Monthly Est.</span>
+                    <span class="v">$${s.cost_per_month.toFixed(2)}</span>
+                </div>
+            </div>
+
+            <div class="t-footer" style="margin-top: 1.5rem;">
+                ${serviceUrl ? `<a href="${serviceUrl}" target="_blank" class="m-btn-signup" style="text-decoration:none; text-align:center; display:block; width:100%; font-size:0.6rem;">PROVISION SERVICE <i class="fas fa-external-link-alt"></i></a>` : ''}
+            </div>
         `;
 
-        tbody.appendChild(row);
+        grid.appendChild(card);
     });
 }
 

@@ -33,39 +33,19 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AuthService authService;
 
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping("/signup")
-    @Transactional
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        try {
-            logger.info("📝 Signup request received for email: {}", signupRequest.getEmail());
-            
-            if (userRepository.existsByEmail(signupRequest.getEmail())) {
-                logger.warn("⚠️ Email already exists: {}", signupRequest.getEmail());
-                return ResponseEntity.badRequest().body(Map.of("error", "Email is already in use!"));
-            }
-
-            UserEntity user = new UserEntity();
-            user.setName(signupRequest.getName());
-            user.setEmail(signupRequest.getEmail());
-            user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-
-            logger.info("💾 Saving user to database: {}", user.getEmail());
-            UserEntity savedUser = userRepository.save(user);
-            logger.info("✅ User saved successfully with ID: {}", savedUser.getId());
-            
-            return ResponseEntity.ok(Map.of("message", "User registered successfully"));
-        } catch (Exception e) {
-            logger.error("❌ Error during signup: ", e);
-            return ResponseEntity.status(500).body(Map.of("error", "Signup failed: " + e.getMessage()));
-        }
+        logger.info("📝 Processing elite signup for: {}", signupRequest.getEmail());
+        authService.registerUser(signupRequest);
+        return ResponseEntity.ok(Map.of("message", "User synchronization successful. Identity established."));
     }
 
     @PostMapping("/login")

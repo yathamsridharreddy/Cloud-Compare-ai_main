@@ -22,10 +22,24 @@
     --gradient-warm: linear-gradient(135deg, #d4a017, #c9a84c);
     --gradient-cool: linear-gradient(135deg, #c9a84c, #d4a017);
     --gradient-purple: linear-gradient(135deg, #d4a017, #f5d060);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 40px rgba(212, 160, 23, 0.15);
-    --gold-shimmer: linear-gradient(135deg, #d4a017 0%, #f5d060 40%, #d4a017 60%, #8b6914 100%);
+    --bg-obsidian: #000000;
+    --bg-vault: #0a0a0a;
+    --bg-glass: rgba(15, 23, 42, 0.4);
+    
+    --gold-primary: #d4a017;
+    --gold-neon: #fbbf24;
+    --gold-glow: rgba(212, 160, 23, 0.4);
+    --gold-dim: rgba(212, 160, 23, 0.1);
+    
+    --text-main: #ffffff;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    
+    --border-glass: rgba(255, 255, 255, 0.05);
+    --border-gold: rgba(212, 160, 23, 0.2);
+    
+    --shadow-elite: 0 50px 100px rgba(0, 0, 0, 0.9);
+    --anim-quantum: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* Reset & Base */
@@ -33,16 +47,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: 
-        radial-gradient(ellipse at top left, rgba(212, 160, 23, 0.06), transparent 50%),
-        radial-gradient(ellipse at top right, rgba(184, 134, 11, 0.04), transparent 50%),
-        radial-gradient(ellipse at bottom center, rgba(212, 160, 23, 0.03), transparent 50%),
-        linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #050505 100%);
-    color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
 }
@@ -536,34 +544,19 @@ body {
     }
 }
 
-/* Table Container */
-.table-container {
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
+/* Telemetry Grid & Cards */
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.telemetry-card {
+    background: var(--bg-vault);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
     padding: 1.5rem;
-    overflow-x: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.table-header h3 {
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .table-header h3 i {
     color: var(--primary);
 }
@@ -1814,3 +1807,136 @@ body.light-theme .provider-chip.active {
 .recommendation-card { transform-style: preserve-3d; transition: transform 0.1s ease-out; cursor: pointer; }
 .recommendation-card:hover { border-color: #fbbf24; }
 .recommendation-card > * { pointer-events: none; }
+
+/* ==========================================================================
+   TELEMETRY CARD SYSTEM: OVER-EXCELLENCE PERFORMANCE
+   ========================================================================== */
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2.5rem;
+}
+
+.telemetry-card {
+    background: var(--bg-vault);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    transition: all 0.5s var(--anim-quantum);
+    overflow: hidden;
+}
+
+.telemetry-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--gold-primary);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.telemetry-card::before {
+    content: " \;
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 4px;
+ height: 100%;
+ background: var(--gold-primary);
+ opacity: 0.3;
+}
+
+.t-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: flex-start;
+ margin-bottom: 2rem;
+}
+
+.t-platform-info {
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
+}
+
+.t-rank-pill {
+ background: var(--gold-dim);
+ color: var(--gold-neon);
+ padding: 4px 12px;
+ border-radius: 50px;
+ font-size: 0.65rem;
+ font-weight: 900;
+ letter-spacing: 1px;
+ width: fit-content;
+}
+
+.t-provider-badge {
+ padding: 6px 14px;
+ border-radius: 8px;
+ font-size: 0.75rem;
+ font-weight: 900;
+ color: #fff;
+ text-transform: uppercase;
+}
+
+.t-service-name {
+ font-size: 1.5rem;
+ font-weight: 900;
+ color: #fff;
+ margin-bottom: 1.5rem;
+ letter-spacing: -0.5px;
+}
+
+.t-stats-row {
+ display: grid;
+ grid-template-columns: 1fr 1fr 1fr;
+ gap: 15px;
+ background: rgba(255,255,255,0.03);
+ padding: 1.25rem;
+ border-radius: 12px;
+ margin-bottom: 2rem;
+}
+
+.t-stat-item { text-align: center; }
+.t-stat-val { display: block; font-size: 1rem; font-weight: 900; color: #fff; }
+.t-stat-lbl { display: block; font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+
+.t-footer {
+ display: flex;
+ justify-content: space-between;
+ align-items: flex-end;
+ border-top: 1px solid var(--border-glass);
+ padding-top: 1.5rem;
+}
+
+.t-price-box .price {
+ display: block;
+ font-size: 1.75rem;
+ font-weight: 900;
+ color: var(--gold-neon);
+ line-height: 1;
+}
+
+.t-price-box .period {
+ font-size: 0.7rem;
+ color: var(--text-muted);
+ text-transform: uppercase;
+}
+
+.t-score-box {
+ text-align: right;
+}
+
+.t-score-val {
+ display: block;
+ font-size: 1.25rem;
+ font-weight: 900;
+ color: #fff;
+}
+
+.t-score-lbl {
+ font-size: 0.6rem;
+ color: var(--text-muted);
+ text-transform: uppercase;
+}
+
