@@ -1541,10 +1541,11 @@ body.light-theme .provider-chip.active {
     z-index: 999999;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     font-family: 'Outfit', sans-serif;
-    overflow: hidden;
+    overflow-y: auto;
+    padding: 100px 20px;
+    box-sizing: border-box;
 }
 
 .minimal-aura {
