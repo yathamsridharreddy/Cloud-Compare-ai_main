@@ -271,6 +271,7 @@ public class RankingService {
     }
 
     private double round(double value, int places) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) return 0;
         return BigDecimal.valueOf(value).setScale(places, RoundingMode.HALF_UP).doubleValue();
     }
 

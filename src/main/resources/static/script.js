@@ -271,21 +271,25 @@ async function compare() {
 
     try {
         const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'login.html';
-            return;
+        const headers = {
+            "Content-Type": "application/json"
+        };
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
         }
 
         const res = await fetch(`${API_BASE_URL}/api/compare`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
+            headers: headers,
             body: JSON.stringify(data)
         });
 
         if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                // Do not redirect, just clear local storage if invalid token was sent
+                localStorage.removeItem('token');
+                localStorage.removeItem('userName');
+            }
             throw new Error(`HTTP error! status: ${res.status}`);
         }
 
@@ -1212,19 +1216,27 @@ async function compareAiTools() {
 
     try {
         const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'login.html';
-            return;
+        const headers = {
+            "Content-Type": "application/json"
+        };
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
         }
 
         const res = await fetch(`${API_BASE_URL}/api/ai-compare`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
+            headers: headers,
             body: JSON.stringify({ purpose: purpose })
         });
+
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                // Do not redirect
+                localStorage.removeItem('token');
+                localStorage.removeItem('userName');
+            }
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
         const result = await res.json();
         if (result.error) throw new Error(result.error);

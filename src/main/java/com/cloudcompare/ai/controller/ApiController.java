@@ -19,6 +19,24 @@ import java.util.*;
  */
 @RestController
 public class ApiController {
+    
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidationException(org.springframework.web.bind.MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        return ResponseEntity.status(400).body(Map.of(
+            "error", "Validation Failed",
+            "message", msg
+        ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        log.error("Unhandled exception: {}", e.getMessage());
+        return ResponseEntity.status(500).body(Map.of(
+            "error", "Internal Server Error",
+            "message", "An unexpected error occurred."
+        ));
+    }
 
     private static final Logger log = LoggerFactory.getLogger(ApiController.class);
 

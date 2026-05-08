@@ -67,14 +67,14 @@ cd "%EXEC_DIR%"
 
 :baseDirFound
 
+set "WRAPPER_JAR_URL=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
 IF NOT EXIST "%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar" (
-    set "WRAPPER_JAR_URL=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
-    echo Downloading Maven Wrapper from !WRAPPER_JAR_URL! ...
+    echo Downloading Maven Wrapper from %WRAPPER_JAR_URL% ...
 
     @REM Use PowerShell to download
     powershell -Command "&{"^
         "$webclient = new-object System.Net.WebClient;"^
-        "$webclient.DownloadFile('!WRAPPER_JAR_URL!', '%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar')"^
+        "$webclient.DownloadFile('%WRAPPER_JAR_URL%', '%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar')"^
     "}"
     echo Finished downloading Maven Wrapper.
 )
@@ -85,11 +85,11 @@ set WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
 @REM work with both Windows and non-Windows executions.
 set MAVEN_CMD_LINE_ARGS=%*
 
-%JAVACMD% ^
+"%JAVACMD%" ^
   %MAVEN_OPTS% ^
   %MAVEN_DEBUG_OPTS% ^
   -classpath "%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar" ^
-  "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" ^
+  "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%." ^
   %WRAPPER_LAUNCHER% %MAVEN_CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end

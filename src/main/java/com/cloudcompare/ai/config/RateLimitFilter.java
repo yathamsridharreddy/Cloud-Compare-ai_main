@@ -40,6 +40,10 @@ public class RateLimitFilter implements Filter {
         }
 
         String clientIp = getClientIp(httpRequest);
+        if (clientIp == null) {
+            chain.doFilter(request, response);
+            return;
+        }
         long now = System.currentTimeMillis();
 
         RateLimitEntry entry = clients.compute(clientIp, (key, existing) -> {
