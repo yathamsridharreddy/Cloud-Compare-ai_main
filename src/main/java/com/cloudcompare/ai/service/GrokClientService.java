@@ -42,32 +42,52 @@ public class GrokClientService {
     @Value("${grok.max-retries:2}")
     private int maxRetries;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private MockDataService mockDataService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    /**
-     * Fetch a live comparison for ANY cloud service category + sub-type.
-     * Works for compute, storage, database, and AI services.
-     * Always returns exactly 5 providers.
-     */
     public List<Map<String, Object>> fetchComparisonFromGrok(String category, String serviceType) throws Exception {
-        if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey)) {
+        if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
             log.info("Using mock Groq response because API key is placeholder.");
-            return new ArrayList<>(List.of(
-                Map.ofEntries(Map.entry("provider", "AWS"), Map.entry("service_name", "AWS " + serviceType), Map.entry("performance_score", 9.2), Map.entry("popularity_score", 9.8), Map.entry("price_per_hour", 0.05), Map.entry("price_per_gb", 0.0), Map.entry("cpu", 2), Map.entry("ram", 4), Map.entry("storage", 100), Map.entry("region", "us-east-1"), Map.entry("description", "Highly reliable and scalable.")),
-                Map.ofEntries(Map.entry("provider", "GCP"), Map.entry("service_name", "Google " + serviceType), Map.entry("performance_score", 9.5), Map.entry("popularity_score", 9.0), Map.entry("price_per_hour", 0.045), Map.entry("price_per_gb", 0.0), Map.entry("cpu", 2), Map.entry("ram", 4), Map.entry("storage", 100), Map.entry("region", "us-central1"), Map.entry("description", "Excellent performance and analytics integration.")),
-                Map.ofEntries(Map.entry("provider", "Azure"), Map.entry("service_name", "Azure " + serviceType), Map.entry("performance_score", 9.0), Map.entry("popularity_score", 9.5), Map.entry("price_per_hour", 0.048), Map.entry("price_per_gb", 0.0), Map.entry("cpu", 2), Map.entry("ram", 4), Map.entry("storage", 100), Map.entry("region", "eastus"), Map.entry("description", "Seamless enterprise integration.")),
-                Map.ofEntries(Map.entry("provider", "OCI"), Map.entry("service_name", "Oracle " + serviceType), Map.entry("performance_score", 8.8), Map.entry("popularity_score", 7.5), Map.entry("price_per_hour", 0.035), Map.entry("price_per_gb", 0.0), Map.entry("cpu", 2), Map.entry("ram", 4), Map.entry("storage", 100), Map.entry("region", "us-ashburn-1"), Map.entry("description", "Cost-effective for high workloads.")),
-                Map.ofEntries(Map.entry("provider", "Alibaba"), Map.entry("service_name", "Alibaba " + serviceType), Map.entry("performance_score", 8.5), Map.entry("popularity_score", 8.0), Map.entry("price_per_hour", 0.038), Map.entry("price_per_gb", 0.0), Map.entry("cpu", 2), Map.entry("ram", 4), Map.entry("storage", 100), Map.entry("region", "ap-southeast-1"), Map.entry("description", "Strong presence in APAC with competitive pricing."))
-            ));
+            return mockDataService.getMockComparison(serviceType);
         }
 
         String prompt = buildPrompt(category, serviceType);
+        String rawResponse = callGroqApi(prompt);
+        String cleaned = extractJson(rawResponse);
 
+        try {
+            return objectMapper.readValue(cleaned, new TypeReference<>() {});
+        } catch (Exception parseErr) {
+            log.error("Failed to parse Groq JSON. Raw: {}", cleaned);
+            throw new RuntimeException("AI returned malformed data. Please try again.");
+        }
+    }
+
+    public List<AiToolResult> fetchAiToolsComparisonFromGrok(String purpose) throws Exception {
+        if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
+            log.info("Using mock Groq response for AI tools because API key is placeholder.");
+            return mockDataService.getMockAiTools();
+        }
+
+        String prompt = buildAiPrompt(purpose);
+        String rawResponse = callGroqApi(prompt);
+        String cleaned = extractJson(rawResponse);
+
+        try {
+            return objectMapper.readValue(cleaned, new TypeReference<>() {});
+        } catch (Exception parseErr) {
+            log.error("Failed to parse Groq AI tools JSON. Raw: {}", cleaned);
+            throw new RuntimeException("AI returned malformed tool data.");
+        }
+    }
+
+    private String callGroqApi(String prompt) throws Exception {
         Exception lastError = null;
-
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 String requestBody = objectMapper.writeValueAsString(Map.of(
@@ -92,54 +112,44 @@ public class GrokClientService {
                 }
 
                 Map<String, Object> data = objectMapper.readValue(response.body(), new TypeReference<>() {});
-
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) data.get("choices");
-                if (choices == null || choices.isEmpty()) {
-                    throw new RuntimeException("Empty Groq response");
-                }
-
                 @SuppressWarnings("unchecked")
                 Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                String raw = ((String) message.get("content")).trim();
-
-                if (raw.isEmpty()) {
-                    throw new RuntimeException("Empty Groq response");
-                }
-
-                // Strip markdown fences if present
-                String cleaned = raw.replaceAll("^```json?\\n?", "").replaceAll("\\n?```$", "").trim();
-
-                List<Map<String, Object>> parsed;
-                try {
-                    parsed = objectMapper.readValue(cleaned, new TypeReference<>() {});
-                } catch (Exception parseErr) {
-                    log.error("Groq returned invalid JSON. Raw content: {}", cleaned.substring(0, Math.min(200, cleaned.length())));
-                    throw new RuntimeException("Groq returned invalid JSON");
-                }
-
-                if (parsed.isEmpty()) {
-                    throw new RuntimeException("Groq returned an empty array");
-                }
-
-                return parsed;
+                return ((String) message.get("content")).trim();
 
             } catch (Exception err) {
                 lastError = err;
-                if (err instanceof java.net.http.HttpTimeoutException) {
-                    log.warn("Groq API timeout on attempt {}/{}", attempt, maxRetries);
-                } else {
-                    log.warn("Groq API error on attempt {}/{}: {}", attempt, maxRetries, err.getMessage());
-                }
-
-                if (attempt < maxRetries) {
-                    // Brief backoff before retry
-                    Thread.sleep(1000L * attempt);
-                }
+                log.warn("Groq attempt {} failed: {}", attempt, err.getMessage());
+                if (attempt < maxRetries) Thread.sleep(1000L * attempt);
             }
         }
+        throw lastError;
+    }
 
-        throw lastError != null ? lastError : new RuntimeException("Groq API failed after all retries");
+    private String extractJson(String raw) {
+        if (raw == null || raw.isEmpty()) return "[]";
+        
+        // Find first [ or { and last ] or }
+        int startBracket = raw.indexOf('[');
+        int startBrace = raw.indexOf('{');
+        int start = -1;
+        
+        if (startBracket != -1 && (startBrace == -1 || startBracket < startBrace)) {
+            start = startBracket;
+        } else if (startBrace != -1) {
+            start = startBrace;
+        }
+        
+        if (start == -1) return raw; // Fallback to raw if no markers found
+
+        int endBracket = raw.lastIndexOf(']');
+        int endBrace = raw.lastIndexOf('}');
+        int end = Math.max(endBracket, endBrace);
+        
+        if (end == -1 || end <= start) return raw;
+        
+        return raw.substring(start, end + 1);
     }
 
     private String buildPrompt(String category, String serviceType) {
@@ -149,134 +159,31 @@ public class GrokClientService {
                 "Return a JSON array with EXACTLY 5 objects (one per provider). Each object must have:\n" +
                 "{\n" +
                 "  \"provider\": \"<AWS|GCP|Azure|OCI|Alibaba>\",\n" +
-                "  \"service_name\": \"<official product name for this service type>\",\n" +
-                "  \"performance_score\": <number from 1 to 10, be realistic>,\n" +
-                "  \"popularity_score\": <number from 1 to 10, be realistic>,\n" +
-                "  \"price_per_hour\": <number in USD, realistic current pricing>,\n" +
-                "  \"price_per_gb\": <number in USD, only relevant for storage, else 0>,\n" +
-                "  \"cpu\": <number of vCPUs if applicable, else 0>,\n" +
-                "  \"ram\": <GB of RAM if applicable, else 0>,\n" +
-                "  \"storage\": <GB of storage if applicable, else 0>,\n" +
-                "  \"region\": \"<default region code e.g. us-east-1, us-central1, eastus, us-ashburn-1, ap-southeast-1>\",\n" +
-                "  \"description\": \"<one-line description of the service>\"\n" +
+                "  \"service_name\": \"<official product name>\",\n" +
+                "  \"performance_score\": <1-10>,\n" +
+                "  \"popularity_score\": <1-10>,\n" +
+                "  \"price_per_hour\": <number>,\n" +
+                "  \"price_per_gb\": <number>,\n" +
+                "  \"cpu\": <number>,\n" +
+                "  \"ram\": <number>,\n" +
+                "  \"storage\": <number>,\n" +
+                "  \"region\": \"<code-e.g.-us-east-1>\",\n" +
+                "  \"description\": \"<text>\"\n" +
                 "}\n\n" +
-                "Rules:\n" +
-                "- Always include ALL 5 providers even if a provider has a weaker offering.\n" +
-                "- Use realistic, current pricing and scores based on your knowledge.\n" +
-                "- For storage services, price_per_gb is the key cost metric; price_per_hour should be 0.\n" +
-                "- For compute/database services, price_per_hour is the key cost metric.\n" +
-                "- For AI services and serverless offerings, provide a simulated \"price_per_hour\" assuming a typical continuous enterprise workload. Do NOT use 0.\n" +
-                "- Output ONLY the raw JSON array. No markdown fences, no explanation, no extra text.";
-    }
-
-    public List<AiToolResult> fetchAiToolsComparisonFromGrok(String purpose) throws Exception {
-        if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey)) {
-            log.info("Using mock Groq response for AI tools because API key is placeholder.");
-            return new ArrayList<>(List.of(
-                createAiTool(1, "ChatGPT", "OpenAI", "GPT-4o", 9.8, "Free tier, $20/mo Pro", "Excellent general purpose AI."),
-                createAiTool(2, "Claude", "Anthropic", "Claude 3.5 Sonnet", 9.6, "Free tier, $20/mo Pro", "Superior reasoning and writing."),
-                createAiTool(3, "Gemini", "Google", "Gemini 1.5 Pro", 9.3, "Free tier, $20/mo Advanced", "Deep integration with Google Workspace."),
-                createAiTool(4, "Copilot", "Microsoft", "GPT-4", 9.0, "Included in M365, $30/mo", "Best for enterprise productivity."),
-                createAiTool(5, "Perplexity", "Perplexity AI", "Sonar", 8.8, "Free tier, $20/mo Pro", "Outstanding for research and search.")
-            ));
-        }
-
-        String prompt = buildAiPrompt(purpose);
-
-        Exception lastError = null;
-
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                String requestBody = objectMapper.writeValueAsString(Map.of(
-                        "model", model,
-                        "messages", List.of(Map.of("role", "user", "content", prompt)),
-                        "temperature", 0.1,
-                        "max_tokens", 2000
-                ));
-
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(endpoint))
-                        .header("Authorization", "Bearer " + apiKey)
-                        .header("Content-Type", "application/json")
-                        .timeout(Duration.ofMillis(timeoutMs))
-                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                        .build();
-
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() != 200) {
-                    throw new RuntimeException("Groq API " + response.statusCode() + ": " + response.body());
-                }
-
-                Map<String, Object> data = objectMapper.readValue(response.body(), new TypeReference<>() {});
-
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) data.get("choices");
-                if (choices == null || choices.isEmpty()) {
-                    throw new RuntimeException("Empty Groq response");
-                }
-
-                @SuppressWarnings("unchecked")
-                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                String raw = ((String) message.get("content")).trim();
-
-                if (raw.isEmpty()) {
-                    throw new RuntimeException("Empty Groq response");
-                }
-
-                String cleaned = raw.replaceAll("^```json?\\n?", "").replaceAll("\\n?```$", "").trim();
-
-                List<AiToolResult> parsed;
-                try {
-                    parsed = objectMapper.readValue(cleaned, new TypeReference<>() {});
-                } catch (Exception parseErr) {
-                    log.error("Groq returned invalid JSON. Raw content: {}", cleaned.substring(0, Math.min(200, cleaned.length())));
-                    throw new RuntimeException("Groq returned invalid JSON");
-                }
-
-                if (parsed.isEmpty()) {
-                    throw new RuntimeException("Groq returned an empty array");
-                }
-
-                return parsed;
-
-            } catch (Exception err) {
-                lastError = err;
-                log.warn("Groq API error on attempt {}/{}: {}", attempt, maxRetries, err.getMessage());
-                if (attempt < maxRetries) {
-                    Thread.sleep(1000L * attempt);
-                }
-            }
-        }
-        throw lastError != null ? lastError : new RuntimeException("Groq API failed after all retries");
+                "Output ONLY the raw JSON array.";
     }
 
     private String buildAiPrompt(String purpose) {
-        return "You are an expert AI integrations analyst. Recommend the top 5 AI tools specifically suited for the purpose of: \"" + purpose + "\".\n\n" +
-                "Return a JSON array with EXACTLY 5 objects (one per tool). Each object must have:\n" +
+        return "Recommend top 5 AI tools for: \"" + purpose + "\".\n\n" +
+                "Return a JSON array with EXACTLY 5 objects:\n" +
                 "{\n" +
-                "  \"tool_name\": \"<official product name of the AI tool>\",\n" +
-                "  \"provider\": \"<company that owns it (e.g. OpenAI, Anthropic, Midjourney)>\",\n" +
-                "  \"model_number\": \"<the specific AI model driving it (e.g. GPT-4o, Claude 3.5 Sonnet, Midjourney v6)>\",\n" +
-                "  \"score\": <number from 1 to 10 for suitability for this specific task>,\n" +
-                "  \"pricing\": \"<one short sentence summarizing pricing model (e.g. 'Free tier, $20/mo Pro')>\",\n" +
-                "  \"description\": \"<one short sentence on why this tool excels at " + purpose + ">\"\n" +
+                "  \"tool_name\": \"<name>\",\n" +
+                "  \"provider\": \"<company>\",\n" +
+                "  \"model_number\": \"<model>\",\n" +
+                "  \"score\": <1-10>,\n" +
+                "  \"pricing\": \"<text>\",\n" +
+                "  \"description\": \"<text>\"\n" +
                 "}\n\n" +
-                "Rules:\n" +
-                "- Rank the tools starting from highest score to lowest.\n" +
-                "- Include different vendors if they have competitive offerings.\n" +
-                "- Output ONLY the raw JSON array. No markdown fences, no explanation, no extra text.";
-    }
-
-    private AiToolResult createAiTool(int rank, String name, String provider, String model, double score, String price, String desc) {
-        AiToolResult res = new AiToolResult();
-        res.setRank(rank);
-        res.setToolName(name);
-        res.setProvider(provider);
-        res.setModelNumber(model);
-        res.setScore(score);
-        res.setPricing(price);
-        res.setDescription(desc);
-        return res;
+                "Output ONLY raw JSON.";
     }
 }

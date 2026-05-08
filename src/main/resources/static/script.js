@@ -145,8 +145,10 @@ async function loadRegions() {
     try {
         const res = await fetch(`${API_BASE_URL}/api/regions`);
         if (res.ok) {
-            const regions = await res.json();
+            const result = await res.json();
+            const regions = result.data || [];
             const regionSelect = document.getElementById('region');
+            if (!regionSelect) return;
 
             // Keep the first "All Regions" option
             regionSelect.innerHTML = '<option value="all">All Regions</option>';
@@ -170,21 +172,21 @@ async function loadRegions() {
 async function loadServiceTypes(category) {
     try {
         const res = await fetch(`${API_BASE_URL}/api/service-types/${category}`);
-        if (!res.ok) return;
+        if (res.ok) {
+            const result = await res.json();
+            const types = result.data || [];
+            const select = document.getElementById('serviceTypeSelect');
+            if (!select) return;
 
-        const types = await res.json();
-        const select = document.getElementById('serviceTypeSelect');
-        if (!select) return;
+            select.innerHTML = '<option value="all">All Types</option>';
 
-        select.innerHTML = '<option value="all">All Types</option>';
-
-        types.forEach(type => {
-            const option = document.createElement('option');
-            option.value = type.value || type.id;
-            option.textContent = type.label || type.name;
-            select.appendChild(option);
-        });
-
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.value || type.id;
+                option.textContent = type.label || type.name;
+                select.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Error loading service types:', error);
     }
@@ -258,7 +260,7 @@ async function compare() {
         currentType = typeSelect.value;
     }
 
-    const data = {
+    const payload = {
         category: category,
         region: regionValue || 'all',
         priority: priorityValue || 'balanced',
@@ -281,7 +283,7 @@ async function compare() {
         const res = await fetch(`${API_BASE_URL}/api/compare`, {
             method: "POST",
             headers: headers,
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         });
 
         if (!res.ok) {
@@ -295,11 +297,14 @@ async function compare() {
 
         const result = await res.json();
 
-        if (result.error) {
-            throw new Error(result.error);
+        if (!result.success || result.error) {
+            throw new Error(result.error || "Comparison failed");
         }
 
-        if (!result.services || result.services.length === 0) {
+        const apiData = result.data;
+        const services = apiData.services || [];
+
+        if (services.length === 0) {
             showError("No services found for the selected category");
             return;
         }
@@ -307,13 +312,13 @@ async function compare() {
         hideLoading();
 
         // Store globally for sorting
-        currentServices = result.services;
+        currentServices = services;
 
         // Display results
-        displayRecommendations(result.services);
-        displayCharts(result.services);
-        displayProviderStats(result.providerStats);
-        displayTable(result.services);
+        displayRecommendations(services);
+        displayCharts(services);
+        displayProviderStats(apiData.providerStats);
+        displayTable(services);
 
         // Show results section
         document.getElementById('resultsSection').style.display = 'block';
@@ -1239,14 +1244,17 @@ async function compareAiTools() {
         }
 
         const result = await res.json();
-        if (result.error) throw new Error(result.error);
-        if (!result.tools || result.tools.length === 0) {
+        if (!result.success || result.error) throw new Error(result.error || "AI Analysis failed");
+        
+        const apiData = result.data;
+        const tools = apiData.tools || [];
+        if (tools.length === 0) {
             showError("No AI tools found for the category");
             return;
         }
 
         hideLoading();
-        displayAiRecommendations(result.tools);
+        displayAiRecommendations(tools);
         document.getElementById('aiResultsSection').style.display = 'block';
 
     } catch (error) {
