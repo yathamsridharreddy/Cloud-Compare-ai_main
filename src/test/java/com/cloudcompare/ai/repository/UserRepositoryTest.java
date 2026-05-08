@@ -12,6 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@org.springframework.test.context.TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
+    "spring.jpa.hibernate.ddl-auto=create-drop"
+})
 class UserRepositoryTest {
 
     @Autowired

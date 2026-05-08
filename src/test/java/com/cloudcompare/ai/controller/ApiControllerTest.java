@@ -49,6 +49,6 @@ class ApiControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"));
+                .andExpect(jsonPath("$.success").value(true));
     }
 }
