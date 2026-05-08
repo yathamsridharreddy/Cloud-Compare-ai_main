@@ -49,6 +49,11 @@ public class ApiController {
         return ResponseEntity.status(400).body(ApiResponse.error("Validation Failed: " + msg));
     }
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(org.springframework.security.access.AccessDeniedException e) {
+        return ResponseEntity.status(403).body(ApiResponse.error("Access Denied: Please log in to access this feature."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
         log.error("Unhandled exception: ", e);
@@ -64,7 +69,6 @@ public class ApiController {
     }
 
     @PostMapping("/compare")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<?>> compare(@Valid @RequestBody CompareRequest req) {
         String category = req.getCategory();
         String svcType = (req.getServiceType() != null && !"all".equals(req.getServiceType()))
@@ -115,7 +119,6 @@ public class ApiController {
     }
 
     @PostMapping("/ai-compare")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<?>> compareAiTools(@Valid @RequestBody AiCompareRequest req) {
         String purpose = req.getPurpose();
         log.info("AI Analysis request for: {}", purpose);
