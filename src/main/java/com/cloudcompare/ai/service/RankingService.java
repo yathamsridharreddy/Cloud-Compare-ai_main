@@ -1,6 +1,7 @@
 package com.cloudcompare.ai.service;
 
 import com.cloudcompare.ai.dto.*;
+import com.cloudcompare.ai.entity.CloudServiceEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -56,6 +57,48 @@ public class RankingService {
         }
 
         // Guarantee all 5 providers exist
+        fillMissingProviders(merged, category, serviceType);
+
+        List<ServiceResult> results = new ArrayList<>(merged.values());
+        return rankAndRespond(results, category, hours, region, cpu, ram, storage, priority);
+    }
+
+    /**
+     * Build response from Database entities
+     */
+    public CompareResponse buildResponseFromDb(
+            List<CloudServiceEntity> dbResults,
+            String category, String serviceType,
+            int hours, String region, int cpu, int ram, int storage, String priority) {
+
+        Map<String, ServiceResult> merged = new LinkedHashMap<>();
+
+        for (CloudServiceEntity entity : dbResults) {
+            ServiceResult sr = new ServiceResult();
+            sr.setId(entity.getId().intValue());
+            sr.setPlatform(entity.getPlatform());
+            sr.setServiceName(entity.getServiceName());
+            sr.setCategory(entity.getCategory());
+            sr.setCpu(entity.getCpu());
+            sr.setRam(entity.getRam());
+            sr.setStorage(entity.getStorage());
+            sr.setPricePerHour(entity.getPricePerHour());
+            sr.setPricePerGb(entity.getPricePerGb());
+            sr.setPerformanceScore(entity.getPerformanceScore());
+            sr.setPopularityScore(entity.getPopularityScore());
+            sr.setRegion(entity.getRegion());
+            sr.setDescription(entity.getDescription());
+            merged.put(entity.getPlatform(), sr);
+        }
+
+        // Guarantee all 5 providers exist
+        fillMissingProviders(merged, category, serviceType);
+
+        List<ServiceResult> results = new ArrayList<>(merged.values());
+        return rankAndRespond(results, category, hours, region, cpu, ram, storage, priority);
+    }
+
+    private void fillMissingProviders(Map<String, ServiceResult> merged, String category, String serviceType) {
         for (String prov : ALL_PROVIDERS) {
             if (!merged.containsKey(prov)) {
                 ServiceResult sr = new ServiceResult();
@@ -75,9 +118,6 @@ public class RankingService {
                 merged.put(prov, sr);
             }
         }
-
-        List<ServiceResult> results = new ArrayList<>(merged.values());
-        return rankAndRespond(results, category, hours, region, cpu, ram, storage, priority);
     }
 
     private CompareResponse rankAndRespond(
@@ -278,12 +318,20 @@ public class RankingService {
     private int toInt(Object val) {
         if (val == null) return 0;
         if (val instanceof Number) return ((Number) val).intValue();
-        try { return Integer.parseInt(val.toString()); } catch (Exception e) { return 0; }
+        try {
+            // Strip any non-digit characters except for initial parsing
+            String cleaned = val.toString().replaceAll("[^0-9.-]", "");
+            return cleaned.isEmpty() ? 0 : (int) Double.parseDouble(cleaned);
+        } catch (Exception e) { return 0; }
     }
 
     private double toDouble(Object val) {
         if (val == null) return 0;
         if (val instanceof Number) return ((Number) val).doubleValue();
-        try { return Double.parseDouble(val.toString()); } catch (Exception e) { return 0; }
+        try {
+            // Strip currency symbols, commas, etc.
+            String cleaned = val.toString().replaceAll("[^0-9.-]", "");
+            return cleaned.isEmpty() ? 0 : Double.parseDouble(cleaned);
+        } catch (Exception e) { return 0; }
     }
 }

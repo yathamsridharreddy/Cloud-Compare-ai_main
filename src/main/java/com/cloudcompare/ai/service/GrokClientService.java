@@ -12,9 +12,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import com.cloudcompare.ai.dto.AiToolResult;
 
 /**
@@ -27,8 +30,16 @@ public class GrokClientService {
 
     private static final Logger log = LoggerFactory.getLogger(GrokClientService.class);
 
-    @Value("${grok.api.key}")
-    private String apiKey;
+    @Value("${grok.api.keys}")
+    private String apiKeysRaw;
+
+    private List<String> getApiKeys() {
+        if (apiKeysRaw == null || apiKeysRaw.isEmpty()) return Collections.emptyList();
+        return Arrays.stream(apiKeysRaw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
 
     @Value("${grok.endpoint}")
     private String endpoint;
@@ -49,44 +60,65 @@ public class GrokClientService {
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
+    private final AtomicInteger keyIndex = new AtomicInteger(0);
+
+    private String getNextApiKey() {
+        List<String> keys = getApiKeys();
+        if (keys.isEmpty()) return "YOUR_GROQ_API_KEY_HERE";
+        return keys.get(Math.abs(keyIndex.getAndIncrement()) % keys.size());
+    }
 
     public List<Map<String, Object>> fetchComparisonFromGrok(String category, String serviceType) throws Exception {
-        if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
-            log.info("Using mock Groq response because API key is placeholder.");
-            return mockDataService.getMockComparison(serviceType);
-        }
+        List<String> keys = getApiKeys();
+        Exception lastErr = null;
 
-        String prompt = buildPrompt(category, serviceType);
-        String rawResponse = callGroqApi(prompt);
-        String cleaned = extractJson(rawResponse);
+        // Try all keys in the pool before giving up
+        for (int i = 0; i < Math.max(1, keys.size()); i++) {
+            String apiKey = getNextApiKey();
+            if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
+                log.info("Using mock Groq response because API key is placeholder.");
+                return mockDataService.getMockComparison(serviceType);
+            }
 
-        try {
-            return objectMapper.readValue(cleaned, new TypeReference<>() {});
-        } catch (Exception parseErr) {
-            log.error("Failed to parse Groq JSON. Raw: {}", cleaned);
-            throw new RuntimeException("AI returned malformed data. Please try again.");
+            try {
+                String prompt = buildPrompt(category, serviceType);
+                String rawResponse = callGroqApi(prompt, apiKey);
+                String cleaned = extractJson(rawResponse);
+                return objectMapper.readValue(cleaned, new TypeReference<>() {});
+            } catch (Exception e) {
+                lastErr = e;
+                log.error("Groq key failed (attempt {}): {}", i + 1, e.getMessage());
+                // Fallthrough to try next key
+            }
         }
+        throw lastErr;
     }
 
     public List<AiToolResult> fetchAiToolsComparisonFromGrok(String purpose) throws Exception {
-        if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
-            log.info("Using mock Groq response for AI tools because API key is placeholder.");
-            return mockDataService.getMockAiTools();
-        }
+        List<String> keys = getApiKeys();
+        Exception lastErr = null;
 
-        String prompt = buildAiPrompt(purpose);
-        String rawResponse = callGroqApi(prompt);
-        String cleaned = extractJson(rawResponse);
+        for (int i = 0; i < Math.max(1, keys.size()); i++) {
+            String apiKey = getNextApiKey();
+            if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
+                log.info("Using mock Groq response for AI tools because API key is placeholder.");
+                return mockDataService.getMockAiTools();
+            }
 
-        try {
-            return objectMapper.readValue(cleaned, new TypeReference<>() {});
-        } catch (Exception parseErr) {
-            log.error("Failed to parse Groq AI tools JSON. Raw: {}", cleaned);
-            throw new RuntimeException("AI returned malformed tool data.");
+            try {
+                String prompt = buildAiPrompt(purpose);
+                String rawResponse = callGroqApi(prompt, apiKey);
+                String cleaned = extractJson(rawResponse);
+                return objectMapper.readValue(cleaned, new TypeReference<>() {});
+            } catch (Exception e) {
+                lastErr = e;
+                log.error("Groq AI Tool key failed (attempt {}): {}", i + 1, e.getMessage());
+            }
         }
+        throw lastErr;
     }
 
-    private String callGroqApi(String prompt) throws Exception {
+    private String callGroqApi(String prompt, String apiKey) throws Exception {
         Exception lastError = null;
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -160,16 +192,17 @@ public class GrokClientService {
                 "{\n" +
                 "  \"provider\": \"<AWS|GCP|Azure|OCI|Alibaba>\",\n" +
                 "  \"service_name\": \"<official product name>\",\n" +
-                "  \"performance_score\": <1-10>,\n" +
-                "  \"popularity_score\": <1-10>,\n" +
-                "  \"price_per_hour\": <number>,\n" +
-                "  \"price_per_gb\": <number>,\n" +
-                "  \"cpu\": <number>,\n" +
-                "  \"ram\": <number>,\n" +
-                "  \"storage\": <number>,\n" +
+                "  \"performance_score\": <1-10 numerical value>,\n" +
+                "  \"popularity_score\": <1-10 numerical value>,\n" +
+                "  \"price_per_hour\": <RAW NUMBER ONLY, e.g. 0.045, no symbols>,\n" +
+                "  \"price_per_gb\": <RAW NUMBER ONLY, e.g. 0.02, no symbols>,\n" +
+                "  \"cpu\": <RAW NUMBER ONLY, number of vCPUs>,\n" +
+                "  \"ram\": <RAW NUMBER ONLY, GB of RAM>,\n" +
+                "  \"storage\": <RAW NUMBER ONLY, GB of storage>,\n" +
                 "  \"region\": \"<code-e.g.-us-east-1>\",\n" +
                 "  \"description\": \"<text>\"\n" +
                 "}\n\n" +
+                "IMPORTANT: Return ONLY raw numbers for cost, cpu, ram, and scores. Do NOT include currency symbols or units in the values.\n" +
                 "Output ONLY the raw JSON array.";
     }
 

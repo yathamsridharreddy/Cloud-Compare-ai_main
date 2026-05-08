@@ -1,6 +1,8 @@
 package com.cloudcompare.ai.controller;
 
 import com.cloudcompare.ai.dto.*;
+import com.cloudcompare.ai.entity.CloudServiceEntity;
+import com.cloudcompare.ai.repository.CloudServiceRepository;
 import com.cloudcompare.ai.service.CacheService;
 import com.cloudcompare.ai.service.GrokClientService;
 import com.cloudcompare.ai.service.MetaDataService;
@@ -36,6 +38,9 @@ public class ApiController {
     
     @Autowired
     private RankingService rankingService;
+    
+    @Autowired
+    private CloudServiceRepository cloudServiceRepository;
 
     @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(org.springframework.web.bind.MethodArgumentNotValidException e) {
@@ -67,11 +72,13 @@ public class ApiController {
         log.info("Processing comparison for {} -> {}", category, svcType);
 
         try {
+            // PURE AI MODE: Always fetch from Groq API as requested
             String cacheKey = "compare_" + category + "_" + svcType;
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> grokResults = (List<Map<String, Object>>) cacheService.get(cacheKey);
 
             if (grokResults == null) {
+                log.info("Fetching fresh AI comparison for {}/{}", category, svcType);
                 grokResults = grokClientService.fetchComparisonFromGrok(category, svcType);
                 cacheService.set(cacheKey, grokResults);
             }

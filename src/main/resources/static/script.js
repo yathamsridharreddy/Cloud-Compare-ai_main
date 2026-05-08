@@ -57,11 +57,11 @@ let currentCategory = 'compute';
 
 // Platform colors for charts
 const platformColors = {
-    'AWS': '#d4a017',
-    'GCP': '#f5d060',
-    'Azure': '#c9a84c',
-    'OCI': '#b8860b',
-    'Alibaba': '#8b6914'
+    'AWS': '#FF9900',      // Amazon Orange
+    'GCP': '#4285F4',      // Google Blue
+    'Azure': '#0078D4',    // Microsoft Azure Blue
+    'OCI': '#F80000',      // Oracle Red
+    'Alibaba': '#FF6A00'   // Alibaba Orange
 };
 
 // Platform icons
@@ -272,7 +272,91 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // EXCELLENCE: Initialize results filters
     setupProviderFilters();
+
+    // Dashbaord Stats Badge Interactions
+    const serviceBadge = document.getElementById('serviceCountBadge');
+    const providerBadge = document.getElementById('providerCountBadge');
+
+    if (serviceBadge) {
+        serviceBadge.onclick = async () => {
+            showKnowledgeModal('Available Service Types', await getAllServiceTypesHtml());
+        };
+    }
+
+    if (providerBadge) {
+        providerBadge.onclick = () => {
+            showKnowledgeModal('Supported Cloud Providers', getProvidersHtml());
+        };
+    }
 });
+
+function showKnowledgeModal(title, content) {
+    const modal = document.getElementById('knowledgeModal');
+    document.getElementById('modalTitle').innerHTML = `<i class="fas fa-info-circle"></i> ${title}`;
+    document.getElementById('modalBody').innerHTML = content;
+    modal.style.display = 'flex';
+    
+    // Close on overlay click
+    modal.onclick = (e) => {
+        if (e.target === modal) closeKnowledgeModal();
+    };
+}
+
+function closeKnowledgeModal() {
+    document.getElementById('knowledgeModal').style.display = 'none';
+}
+
+async function getAllServiceTypesHtml() {
+    const categories = ['compute', 'storage', 'database', 'ai'];
+    let html = '<div class="knowledge-grid">';
+    
+    for (const cat of categories) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/service-types/${cat}`);
+            if (res.ok) {
+                const result = await res.json();
+                const types = result.data || [];
+                html += `
+                    <div class="knowledge-category">
+                        <h4><i class="fas ${getCategoryIcon(cat)}"></i> ${cat.toUpperCase()}</h4>
+                        <ul>
+                            ${types.map(t => `<li><i class="fas fa-check-circle"></i> ${t.label || t.name}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        } catch (e) { console.error(e); }
+    }
+    html += '</div>';
+    return html;
+}
+
+function getProvidersHtml() {
+    const providers = [
+        { name: 'AWS', desc: 'Amazon Web Services - Global Leader', icon: 'fab fa-aws' },
+        { name: 'GCP', desc: 'Google Cloud Platform - AI & Data Expert', icon: 'fab fa-google' },
+        { name: 'Azure', desc: 'Microsoft Azure - Enterprise Favorite', icon: 'fab fa-microsoft' },
+        { name: 'OCI', desc: 'Oracle Cloud - High Performance Database', icon: 'fas fa-cloud' },
+        { name: 'Alibaba', desc: 'Alibaba Cloud - Leading Asia Provider', icon: 'fas fa-server' }
+    ];
+    
+    return `
+        <div class="knowledge-grid">
+            ${providers.map(p => `
+                <div class="knowledge-item">
+                    <i class="${p.icon}" style="font-size: 2rem; color: #d4a017; margin-bottom: 1rem;"></i>
+                    <h5>${p.name}</h5>
+                    <p>${p.desc}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getCategoryIcon(cat) {
+    const icons = { compute: 'fa-microchip', storage: 'fa-hdd', database: 'fa-server', ai: 'fa-brain' };
+    return icons[cat] || 'fa-cube';
+}
 
 // Check auth state
 function checkAuthState() {
@@ -334,56 +418,21 @@ async function loadServiceTypes(category) {
         if (res.ok) {
             const result = await res.json();
             const types = result.data || [];
-            const grid = document.getElementById('serviceTypeGrid');
-            const hiddenInput = document.getElementById('serviceTypeSelect');
-            if (!grid) return;
+            const select = document.getElementById('serviceTypeSelect');
+            if (!select) return;
 
-            grid.innerHTML = '';
-            
-            // Add "All" button
-            const allBtn = document.createElement('button');
-            allBtn.className = 'type-btn active';
-            allBtn.innerHTML = '<i class="fas fa-layer-group"></i> All Types';
-            allBtn.onclick = () => selectType('all', allBtn);
-            grid.appendChild(allBtn);
+            select.innerHTML = '<option value="all">All Types</option>';
 
             types.forEach(type => {
-                const btn = document.createElement('button');
-                btn.className = 'type-btn';
-                const typeLabel = type.label || type.name;
-                const typeValue = type.value || type.id;
-                
-                // Simple icon mapping
-                let icon = 'fa-tag';
-                if (typeLabel.toLowerCase().includes('general')) icon = 'fa-microchip';
-                else if (typeLabel.toLowerCase().includes('compute')) icon = 'fa-cogs';
-                else if (typeLabel.toLowerCase().includes('memory')) icon = 'fa-memory';
-                else if (typeLabel.toLowerCase().includes('storage')) icon = 'fa-hdd';
-                else if (typeLabel.toLowerCase().includes('gpu')) icon = 'fa-vr-cardboard';
-                
-                btn.innerHTML = `<i class="fas ${icon}"></i> ${typeLabel}`;
-                btn.onclick = () => selectType(typeValue, btn);
-                grid.appendChild(btn);
+                const option = document.createElement('option');
+                option.value = type.value || type.id;
+                option.textContent = type.label || type.name;
+                select.appendChild(option);
             });
-            
-            // Trigger initial compare if needed or update hidden input
-            hiddenInput.value = 'all';
         }
     } catch (error) {
         console.error('Error loading service types:', error);
     }
-}
-
-function selectType(val, btn) {
-    const hiddenInput = document.getElementById('serviceTypeSelect');
-    hiddenInput.value = val;
-    
-    // Update UI active state
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    // EXCELLENCE: Auto-trigger comparison
-    compare();
 }
 
 // Setup category buttons
@@ -398,10 +447,7 @@ function setupCategoryButtons() {
             // Update current category
             currentCategory = this.dataset.category;
             // Load specific service types for this category
-            loadServiceTypes(currentCategory).then(() => {
-                // EXCELLENCE: Auto-trigger comparison on category change
-                compare();
-            });
+            loadServiceTypes(currentCategory);
         });
     });
 }
@@ -786,7 +832,7 @@ function displayCharts(services) {
                 backgroundColor: bgColors.map(c => createGradient(costCtx, c)),
                 borderColor: 'transparent',
                 borderWidth: 0,
-                borderRadius: 14, // Rounded bars (12-15px)
+                borderRadius: 0, // Sharp square bars
                 borderSkipped: false,
                 hoverBackgroundColor: bgColors.map(c => createGlowGradient(costCtx, c)),
                 hoverBorderWidth: 0,
@@ -828,7 +874,7 @@ function displayCharts(services) {
                 backgroundColor: bgColors.map(c => createGradient(perfCtx, c)),
                 borderColor: 'transparent',
                 borderWidth: 0,
-                borderRadius: 14, // Rounded bars (12-15px)
+                borderRadius: 0, // Sharp square bars
                 borderSkipped: false,
                 hoverBackgroundColor: bgColors.map(c => createGlowGradient(perfCtx, c)),
                 hoverBorderWidth: 0,
@@ -877,7 +923,7 @@ function displayCharts(services) {
                 backgroundColor: bgColors.map(c => createGradient(rankCtx, c)),
                 borderColor: 'transparent',
                 borderWidth: 0,
-                borderRadius: 14, // Rounded bars (12-15px)
+                borderRadius: 0, // Sharp square bars
                 borderSkipped: false,
                 hoverBackgroundColor: bgColors.map(c => createGlowGradient(rankCtx, c)),
                 hoverBorderWidth: 0,
@@ -951,7 +997,7 @@ function displayTrendChart(services) {
             backgroundColor: adjustColorOpacity(color, 0.1),
             borderWidth: 2,
             fill: false,
-            tension: 0.4, // Smooth curves like stock charts
+            tension: 0, // Sharp direct lines (no curves)
             pointRadius: 4,
             pointHoverRadius: 8,
             pointBackgroundColor: color,
@@ -1163,7 +1209,7 @@ function displayPlatformCharts(services) {
                 backgroundColor: platformBgColors.map(c => createGradient(valueCtx, c)),
                 borderColor: 'transparent',
                 borderWidth: 0,
-                borderRadius: 14, // Rounded bars (12-15px)
+                borderRadius: 0, // Sharp square bars
                 borderSkipped: false,
                 hoverBackgroundColor: platformBgColors.map(c => createGlowGradient(valueCtx, c)),
                 hoverBorderWidth: 0,
@@ -1212,7 +1258,7 @@ function displayPlatformCharts(services) {
                 backgroundColor: platformBgColors.map(c => createGradient(popCtx, c)),
                 borderColor: 'transparent',
                 borderWidth: 0,
-                borderRadius: 14, // Rounded bars (12-15px)
+                borderRadius: 0, // Sharp square bars
                 borderSkipped: false,
                 hoverBackgroundColor: platformBgColors.map(c => createGlowGradient(popCtx, c)),
                 hoverBorderWidth: 0,

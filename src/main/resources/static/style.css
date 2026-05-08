@@ -1152,8 +1152,76 @@ body.light-theme .rank-other {
     color: #6b5c3e;
 }
 
-body.light-theme .logo-icon {
+.premium-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.premium-select {
+    width: 100%;
+    padding: 0.8rem;
+    padding-right: 2.5rem; /* Space for arrow */
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     color: white;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    transition: all 0.3s;
+    font-size: 0.8rem;
+}
+
+.premium-select-wrapper:hover .select-arrow {
+    color: #d4a017;
+}
+
+.premium-select:hover {
+    border-color: rgba(212, 160, 23, 0.4);
+    background-color: rgba(30, 41, 59, 0.6);
+}
+
+.premium-select:focus {
+    outline: none;
+    border-color: #d4a017;
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.2);
+}
+
+.premium-select option {
+    background: #0f172a;
+    color: white;
+    padding: 10px;
+}
+
+/* Light Theme */
+body.light-theme .premium-select {
+    background: white;
+    border-color: rgba(184, 134, 11, 0.15);
+    color: #6b5c3e;
+}
+
+body.light-theme .select-arrow {
+    color: #6b5c3e;
+}
+
+body.light-theme .premium-select:hover {
+    background-color: #faf6eb;
+}
+
+body.light-theme .premium-select option {
+    background: white;
+    color: #6b5c3e;
 }
 
 /* ============================================================
@@ -1410,3 +1478,37 @@ body.light-theme .provider-chip.active {
     color: white;
     border-color: #1a1408;
 }
+
+/* Interactive Stats Badges */
+.clickable-badge { cursor: pointer; transition: all 0.3s ease; }
+.clickable-badge:hover { transform: translateY(-2px); background: rgba(212, 160, 23, 0.15) !important; border-color: #d4a017 !important; }
+.clickable-badge:active { transform: translateY(0); }
+
+/* Knowledge Modal Styles */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; animation: fadeIn 0.3s ease; }
+.modal-content { max-width: 900px; width: 95%; max-height: 85vh; overflow-y: auto; padding: 2.5rem; position: relative; border: 1px solid rgba(212, 160, 23, 0.2); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 1rem; }
+.close-modal { background: none; border: none; color: #94a3b8; font-size: 2rem; cursor: pointer; transition: all 0.3s; }
+.close-modal:hover { color: #d4a017; transform: rotate(90deg); }
+.knowledge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+.knowledge-category h4 { color: #d4a017; margin-bottom: 1rem; font-size: 1.1rem; letter-spacing: 1px; }
+.knowledge-category ul { list-style: none; padding: 0; }
+.knowledge-category li { color: #e2e8f0; margin-bottom: 0.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+.knowledge-category li i { color: #10b981; font-size: 0.8rem; }
+.knowledge-item { text-align: center; padding: 2rem; background: rgba(30, 41, 59, 0.5); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s; }
+.knowledge-item:hover { border-color: #d4a017; transform: translateY(-5px); }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Official Brand Colors for Provider Badges */
+.provider-badge.aws { background: rgba(255, 153, 0, 0.15); color: #FF9900; border: 1px solid rgba(255, 153, 0, 0.3); }
+.provider-badge.gcp { background: rgba(66, 133, 244, 0.15); color: #4285F4; border: 1px solid rgba(66, 133, 244, 0.3); }
+.provider-badge.azure { background: rgba(0, 120, 212, 0.15); color: #0078D4; border: 1px solid rgba(0, 120, 212, 0.3); }
+.provider-badge.oci { background: rgba(248, 0, 0, 0.15); color: #F80000; border: 1px solid rgba(248, 0, 0, 0.3); }
+.provider-badge.alibaba { background: rgba(255, 106, 0, 0.15); color: #FF6A00; border: 1px solid rgba(255, 106, 0, 0.3); }
+
+/* Table Row Platform Colors */
+.platform-tag.aws { background: #FF9900; color: #fff; }
+.platform-tag.gcp { background: #4285F4; color: #fff; }
+.platform-tag.azure { background: #0078D4; color: #fff; }
+.platform-tag.oci { background: #F80000; color: #fff; }
+.platform-tag.alibaba { background: #FF6A00; color: #fff; }
