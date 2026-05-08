@@ -1583,3 +1583,24 @@ body.light-theme .provider-chip.active {
 .brand:hover { filter: grayscale(0); transform: scale(1.05); color: white; }
 .brand i { font-size: 1.4rem; }
 .brand span { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Advanced UI Animations & Premium Polish */
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes shine { from { left: -100%; } to { left: 100%; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+.intro-btn.primary { position: relative; overflow: hidden; }
+.intro-btn.primary::after { content: " \; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-25deg); transition: 0.5s; }
+.intro-btn.primary:hover::after { animation: shine 0.8s forwards; }
+
+.selection-card { animation: slideUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both; }
+.selection-card:nth-child(2) { animation-delay: 0.2s; }
+
+.premium-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.premium-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(212, 160, 23, 0.2); border-color: #fbbf24; }
+
+/* Background Particles Layer */
+.particle-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.particle { position: absolute; background: #d4a017; border-radius: 50%; opacity: 0.3; filter: blur(1px); animation: drift 20s linear infinite; }
+@keyframes drift { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-100px) rotate(360deg); } }

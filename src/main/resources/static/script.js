@@ -290,9 +290,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // PHASE 1: OVER EXCELLENCE - Global Pulse on load
-    // MOVED: Flow now handled by enterDashboard, Auth, and Selection logic
     handlePlatformFlow();
+    
+    // UI EXCELLENCE: Initialize Particle Background
+    initParticleSystem();
 });
+
+function initParticleSystem() {
+    const bg = document.createElement('div');
+    bg.className = 'particle-bg';
+    document.body.appendChild(bg);
+    
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 4 + 2;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.left = `${Math.random() * 100}%`;
+        p.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        p.style.animationDelay = `${Math.random() * 10}s`;
+        p.style.opacity = Math.random() * 0.5;
+        bg.appendChild(p);
+    }
+}
 
 function handlePlatformFlow() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -687,6 +708,8 @@ function displayRecommendations(services) {
 
         const card = document.createElement('div');
         card.className = 'recommendation-card';
+        // UI EXCELLENCE: Staggered scale-in animation
+        card.style.animation = `scaleIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) both ${index * 0.1}s`;
         card.innerHTML = `
             <div class="recommendation-badge" style="${rankBadgeStyle}">
                 <i class="${platformIcon}"></i> ${rankText}
