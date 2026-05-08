@@ -15,7 +15,7 @@
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes slideIn { from { opacity: 0; transform: translateZ(30px) translateY(20px); } to { opacity: 1; transform: translateZ(30px) translateY(0); } }
 
-        body { margin: 0; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+        body { margin: 0; background: #000; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; }
         
         .auth-container {
             min-height: 100vh;
@@ -405,6 +405,7 @@
 
         // UI EXCELLENCE: Dynamic Light Follow
         const light = document.getElementById('lightFollow');
+        const card = document.querySelector('.auth-card');
         document.addEventListener('mousemove', (e) => {
             light.style.left = `${e.clientX}px`;
             light.style.top = `${e.clientY}px`;

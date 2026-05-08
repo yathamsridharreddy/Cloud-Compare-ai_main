@@ -290,88 +290,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // PHASE 1: OVER EXCELLENCE - Global Pulse on load
-    handlePlatformFlow();
-    
-    // UI EXCELLENCE: Initialize Particle Background
-    initParticleSystem();
+    // Automatically perform a global compute comparison to populate the dashboard immediately
+    setTimeout(() => {
+        const categoryBtn = document.querySelector('.category-btn[data-category="compute"]');
+        if (categoryBtn) {
+            categoryBtn.click(); // Select compute
+            compare(); // Trigger analysis
+        }
+    }, 1500);
 });
-
-function initParticleSystem() {
-    const bg = document.createElement('div');
-    bg.className = 'particle-bg';
-    document.body.appendChild(bg);
-    
-    for (let i = 0; i < 30; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const size = Math.random() * 4 + 2;
-        p.style.width = `${size}px`;
-        p.style.height = `${size}px`;
-        p.style.left = `${Math.random() * 100}%`;
-        p.style.animationDuration = `${Math.random() * 10 + 10}s`;
-        p.style.animationDelay = `${Math.random() * 10}s`;
-        p.style.opacity = Math.random() * 0.5;
-        bg.appendChild(p);
-    }
-}
-
-function handlePlatformFlow() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isPostLogin = urlParams.get('login') === 'success';
-    const token = localStorage.getItem('token');
-    const intro = document.getElementById('introPage');
-    const selection = document.getElementById('selectionPage');
-
-    if (!token) {
-        // No auth - always show intro
-        if (intro) intro.style.display = 'flex';
-    } else if (isPostLogin) {
-        // Just logged in - show selection
-        if (intro) intro.style.display = 'none';
-        if (selection) selection.style.display = 'flex';
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-        // Already logged in and returning - show dashboard directly
-        if (intro) intro.style.display = 'none';
-        if (selection) selection.style.display = 'none';
-        // (Optional: Trigger pulse if you want it to auto-run for returning users)
-        // triggerGlobalPulse();
-    }
-}
-
-function enterDashboard() {
-    // ALWAYS go to login/signup first as requested
-    window.location.href = 'login.html';
-}
-
-function selectTool(tool) {
-    const selection = document.getElementById('selectionPage');
-    if (selection) {
-        selection.classList.add('hide');
-        setTimeout(() => {
-            selection.style.display = 'none';
-            // Switch view based on selection
-            if (tool === 'ai') {
-                toggleView('ai');
-            } else {
-                toggleView('cloud');
-            }
-            // Start Global Pulse
-            triggerGlobalPulse();
-        }, 800);
-    }
-}
-
-function triggerGlobalPulse() {
-    console.log("Triggering Global Pulse Analysis...");
-    // Check current view to click the right button
-    const activeBtn = document.querySelector('.toggle-btn.active');
-    const compareBtn = document.querySelector('.compare-btn');
-    if (compareBtn) {
-        compareBtn.click(); // Trigger analysis for current view
-    }
-}
 
 function showKnowledgeModal(title, content) {
     const modal = document.getElementById('knowledgeModal');
@@ -457,7 +384,7 @@ function checkAuthState() {
             logoutBtn.onclick = function () {
                 localStorage.removeItem('token');
                 localStorage.removeItem('userName');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             };
         }
     } else {
@@ -558,9 +485,10 @@ async function loadServiceCount() {
     allProviders = ['AWS', 'GCP', 'Azure', 'OCI', 'Alibaba'];
 }
 
+// Main compare function
+let isComparing = false;
 async function compare() {
     if (isComparing) return;
-    setPulse('ANALYZING GLOBAL REGIONS...', true);
 
     // Get current category from active button
     const activeBtn = document.querySelector('.category-btn.active');
@@ -655,20 +583,13 @@ async function compare() {
     } catch (error) {
         console.error("Compare error:", error);
         hideLoading();
-        
-        // PHASE 3: Config Onboarding Check
-        if (error.message.includes("Configuration Missing") || error.message.includes("YOUR_GROQ_API_KEY")) {
-            document.getElementById('configOverlay').style.display = 'flex';
-        } else {
-            showError("Failed to compare services. Please try again.\n" + error.message);
-        }
+        showError("Failed to compare services. Please try again.\n" + error.message);
     } finally {
         isComparing = false;
         const compareBtn = document.querySelector('.compare-btn');
         compareBtn.innerHTML = '<i class="fas fa-rocket"></i> Compare Services';
         compareBtn.style.opacity = '1';
         compareBtn.style.cursor = 'pointer';
-        setPulse('SYSTEM READY', false);
     }
 }
 
@@ -708,8 +629,6 @@ function displayRecommendations(services) {
 
         const card = document.createElement('div');
         card.className = 'recommendation-card';
-        // UI EXCELLENCE: Staggered scale-in animation
-        card.style.animation = `scaleIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) both ${index * 0.1}s`;
         card.innerHTML = `
             <div class="recommendation-badge" style="${rankBadgeStyle}">
                 <i class="${platformIcon}"></i> ${rankText}
@@ -1391,68 +1310,55 @@ function displayPlatformCharts(services) {
     });
 }
 
-// Display results in Telemetry Grid
+// Display results table
 function displayTable(services) {
-    const grid = document.getElementById('detailedTelemetryGrid');
-    if (!grid) return;
+    const tbody = document.getElementById('resultsBody');
 
-    // Clear existing cards
-    grid.innerHTML = "";
+    // Clear existing rows
+    tbody.innerHTML = "";
 
-    // Add cards for each service
+    // Add rows for each service
     services.forEach(s => {
-        const card = document.createElement("div");
-        card.className = "telemetry-card";
+        const row = document.createElement("tr");
+
+        // Get rank badge class
+        let rankClass = "rank-other";
+        if (s.rank === 1) rankClass = "rank-1";
+        else if (s.rank === 2) rankClass = "rank-2";
+        else if (s.rank === 3) rankClass = "rank-3";
+
+        // Get performance class
+        let perfClass = "perf-low";
+        if (s.performanceLevel === "High") perfClass = "perf-high";
+        else if (s.performanceLevel === "Medium") perfClass = "perf-medium";
 
         // Resolve the real cloud provider URL for this service
-        const serviceUrl = getServiceUrl(s.platform, s.service_name);
-        
-        card.innerHTML = `
-            <div class="t-header">
-                <div class="t-platform-info">
-                    <span class="t-rank-pill">RANK #${s.rank}</span>
-                    <span class="t-provider-badge" style="background: ${platformColors[s.platform]}">${s.platform}</span>
-                </div>
-                <div class="t-score-box">
-                    <span class="t-score-val">${s.score.toFixed(1)}</span>
-                    <span class="t-score-lbl">INTELLIGENCE</span>
-                </div>
-            </div>
+        const tableServiceUrl = getServiceUrl(s.platform, s.service_name);
+        const serviceNameHtml = tableServiceUrl
+            ? `<a href="${tableServiceUrl}" target="_blank" rel="noopener noreferrer" class="table-service-link">${s.service_name} <i class="fas fa-external-link-alt" style="font-size: 0.7em; opacity: 0.6;"></i></a>`
+            : s.service_name;
 
-            <h3 class="t-service-name">${s.service_name}</h3>
-
-            <div class="t-metrics">
-                <div class="t-metric">
-                    <span class="val">${s.cpu || 'Auto'}</span>
-                    <span class="lbl">CPU</span>
-                </div>
-                <div class="t-metric">
-                    <span class="val">${s.ram || 'Auto'}</span>
-                    <span class="lbl">RAM</span>
-                </div>
-                <div class="t-metric">
-                    <span class="val">${s.performanceLevel}</span>
-                    <span class="lbl">PERF</span>
-                </div>
-            </div>
-
-            <div class="t-costs">
-                <div class="t-cost-row">
-                    <span class="l">Hourly Rate</span>
-                    <span class="v">$${s.cost_per_hour.toFixed(4)}</span>
-                </div>
-                <div class="t-cost-row">
-                    <span class="l">Monthly Est.</span>
-                    <span class="v">$${s.cost_per_month.toFixed(2)}</span>
-                </div>
-            </div>
-
-            <div class="t-footer" style="margin-top: 1.5rem;">
-                ${serviceUrl ? `<a href="${serviceUrl}" target="_blank" class="m-btn-signup" style="text-decoration:none; text-align:center; display:block; width:100%; font-size:0.6rem;">PROVISION SERVICE <i class="fas fa-external-link-alt"></i></a>` : ''}
-            </div>
+        row.innerHTML = `
+            <td><span class="rank-badge ${rankClass}">#${s.rank}</span></td>
+            <td>
+                <span class="platform-badge" style="background: ${platformColors[s.platform]}">
+                    ${s.platform}
+                </span>
+            </td>
+            <td>${serviceNameHtml}</td>
+            <td>${s.cpu || '-'}</td>
+            <td>${s.ram || '-'}</td>
+            <td>${s.storage || '-'}</td>
+            <td><strong>$${s.cost_per_hour.toFixed(4)}</strong></td>
+            <td><strong>$${s.cost_per_day.toFixed(2)}</strong></td>
+            <td><strong>$${s.cost_per_week.toFixed(2)}</strong></td>
+            <td><strong>$${s.cost_per_month.toFixed(2)}</strong></td>
+            <td><span class="${perfClass}">${s.performanceLevel}</span></td>
+            <td>${(s.popularity_score || 5).toFixed(1)}/10</td>
+            <td><strong>${s.score.toFixed(1)}</strong></td>
         `;
 
-        grid.appendChild(card);
+        tbody.appendChild(row);
     });
 }
 
@@ -1831,14 +1737,4 @@ function exportToCSV() {
     a.setAttribute('href', url);
     a.setAttribute('download', 'CloudCompare_Architect_Report.csv');
     a.click();
-}
-
-function copySetupCommand() {
-    const command = document.getElementById('setupCommand').innerText;
-    navigator.clipboard.writeText(command);
-    const btn = document.querySelector('.copy-btn');
-    btn.innerHTML = '<i class="fas fa-check"></i> Copied';
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-    }, 2000);
 }

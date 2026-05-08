@@ -64,7 +64,7 @@ public class GrokClientService {
 
     private String getNextApiKey() {
         List<String> keys = getApiKeys();
-        if (keys.isEmpty()) return "YOUR_GROQ_API_KEY_HERE";
+        if (keys.isEmpty()) return "YOUR_GROQ_API_KEYS_HERE";
         return keys.get(Math.abs(keyIndex.getAndIncrement()) % keys.size());
     }
 
@@ -75,7 +75,7 @@ public class GrokClientService {
         // Try all keys in the pool before giving up
         for (int i = 0; i < Math.max(1, keys.size()); i++) {
             String apiKey = getNextApiKey();
-            if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
+            if ("YOUR_GROQ_API_KEYS_HERE".equals(apiKey) || apiKey.isEmpty()) {
                 log.info("Using mock Groq response because API key is placeholder.");
                 return mockDataService.getMockComparison(serviceType);
             }
@@ -100,7 +100,7 @@ public class GrokClientService {
 
         for (int i = 0; i < Math.max(1, keys.size()); i++) {
             String apiKey = getNextApiKey();
-            if ("YOUR_GROQ_API_KEY_HERE".equals(apiKey) || apiKey.isEmpty()) {
+            if ("YOUR_GROQ_API_KEYS_HERE".equals(apiKey) || apiKey.isEmpty()) {
                 log.info("Using mock Groq response for AI tools because API key is placeholder.");
                 return mockDataService.getMockAiTools();
             }

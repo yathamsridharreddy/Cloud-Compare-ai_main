@@ -5,6 +5,7 @@ import com.cloudcompare.ai.dto.SignupRequest;
 import com.cloudcompare.ai.entity.UserEntity;
 import com.cloudcompare.ai.repository.UserRepository;
 import com.cloudcompare.ai.security.JwtUtil;
+import com.cloudcompare.ai.service.AuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
