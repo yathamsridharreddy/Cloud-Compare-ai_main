@@ -558,10 +558,9 @@ async function loadServiceCount() {
     allProviders = ['AWS', 'GCP', 'Azure', 'OCI', 'Alibaba'];
 }
 
-// Main compare function
-let isComparing = false;
 async function compare() {
     if (isComparing) return;
+    setPulse('ANALYZING GLOBAL REGIONS...', true);
 
     // Get current category from active button
     const activeBtn = document.querySelector('.category-btn.active');
@@ -669,6 +668,7 @@ async function compare() {
         compareBtn.innerHTML = '<i class="fas fa-rocket"></i> Compare Services';
         compareBtn.style.opacity = '1';
         compareBtn.style.cursor = 'pointer';
+        setPulse('SYSTEM READY', false);
     }
 }
 

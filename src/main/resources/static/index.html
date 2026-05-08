@@ -93,13 +93,15 @@
     <div class="app-container">
         <!-- Header -->
         <header class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-cloud"></i>
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-microchip"></i>
+                    <span>CloudCompare <span class="gold-text">AI</span></span>
                 </div>
-                <div class="logo-text">
-                    <h1>CloudCompare AI</h1>
-                    <span>Multi-Cloud Service Optimization</span>
+                <!-- UI EXCELLENCE: System Pulse Monitor -->
+                <div class="system-pulse-monitor">
+                    <div class="pulse-dot"></div>
+                    <span id="pulseStatus">SYSTEM READY</span>
                 </div>
             </div>
             <div class="header-actions">
@@ -500,6 +502,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js?v=11"></script>
 </body>
