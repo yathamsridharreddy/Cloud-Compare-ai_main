@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudCompare AI - Multi-Cloud Service Recommendation</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css?v=12">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -16,54 +16,64 @@
 
 <body>
     <!-- Next-Gen Premium Landing Page (Complete Replacement) -->
-    <div id="introPage" class="intro-overlay">
-        <!-- Floating Glass Navbar -->
+    <div id="introPage">
+        <div class="intro-background">
+            <div class="neural-grid"></div>
+            <div class="glow-sphere"></div>
+            <div class="glow-sphere-2"></div>
+        </div>
+
+        <!-- Minimalist Glass HUD -->
         <nav class="next-nav">
-            <div class="next-logo">
-                <i class="fas fa-microchip"></i> CLOUDCOMPARE <span>AI</span>
-            </div>
+            <a href="#" class="next-logo">
+                <i class="fas fa-microchip"></i>
+                <span>CloudCompare <span>AI</span></span>
+            </a>
             <div class="next-nav-links">
-                <a href="#">Engine</a>
-                <a href="#">Intelligence</a>
-                <a href="#">Architecture</a>
-                <a href="#">Pricing</a>
+                <a href="#engine">Engine</a>
+                <a href="#intelligence">Intelligence</a>
+                <a href="#architecture">Architecture</a>
             </div>
             <div class="next-nav-auth">
                 <a href="login.html" class="next-login">LOG IN</a>
-                <button class="next-signup-btn" onclick="enterDashboard()">SIGN UP</button>
+                <button class="next-signup-btn" onclick="location.href='signup.html'">SIGN UP</button>
             </div>
         </nav>
 
-        <main class="next-hero">
-            <div class="next-hero-left">
-                <div class="next-badge"><span>NEW</span> VERSION 2.0 IS LIVE</div>
-                <h1 class="next-title">THE FUTURE OF<br>CLOUD<br><span>INTELLIGENCE</span></h1>
-                <p class="next-description">Optimize your multi-cloud architecture with high-precision AI benchmarking. Compare AWS, Azure, GCP, and AI Models in one unified terminal.</p>
-                <div class="next-actions">
-                    <button class="next-btn primary" onclick="enterDashboard()">
-                        SIGN UP NOW <i class="fas fa-chevron-right"></i>
-                    </button>
-                    <button class="next-btn secondary" onclick="enterDashboard()">
-                        EXPLORE ENGINE <i class="fas fa-play"></i>
-                    </button>
+        <!-- Immersive Central Hub -->
+        <div class="core-hub">
+            <div class="core-visual-container">
+                <div class="orbital-ring">
+                    <div class="orbit-icon"><i class="fab fa-aws"></i></div>
+                    <div class="orbit-icon"><i class="fab fa-google"></i></div>
+                    <div class="orbit-icon"><i class="fab fa-microsoft"></i></div>
+                    <div class="orbit-icon"><i class="fas fa-cloud"></i></div>
                 </div>
-                <div class="next-stats">
-                    <div class="stat"><span class="val">10+</span><span class="lbl">PROVIDERS</span></div>
-                    <div class="stat"><span class="val">500+</span><span class="lbl">SERVICES</span></div>
-                    <div class="stat"><span class="val">AI</span><span class="lbl">INSIGHTS</span></div>
-                </div>
+                <img src="./assets/neural-core.png" alt="Neural Core" class="neural-core-asset">
+                <div class="core-glow"></div>
             </div>
-            <div class="next-hero-right">
-                <div class="hero-visual-wrapper">
-                    <img src="./assets/hero-bg.png" alt="Cloud AI" class="hero-3d-asset">
-                    <div class="hero-glow-ring"></div>
-                </div>
-            </div>
-        </main>
 
-        <div class="intro-background">
-            <div class="glow-sphere"></div>
-            <div class="glow-sphere-2"></div>
+            <div class="core-content">
+                <div class="next-badge"><span>NEW</span> SYSTEM 2.0 IS ACTIVE</div>
+                <h1 class="core-title">THE FUTURE OF<br><span>CLOUD INTELLIGENCE</span></h1>
+                <p class="core-description">
+                    Optimize your multi-cloud architecture with high-precision AI benchmarking. 
+                    One unified terminal for AWS, Azure, GCP, and Neural Models.
+                </p>
+                <div class="core-actions">
+                    <button class="next-btn primary" onclick="location.href='signup.html'">
+                        GET STARTED <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="next-btn secondary" onclick="location.href='login.html'">
+                        EXPLORE ENGINE
+                    </button>
+                </div>
+                <div class="core-stats-strip">
+                    <div class="c-stat"><span class="v">10+</span><span class="l">PROVIDERS</span></div>
+                    <div class="c-stat"><span class="v">500+</span><span class="l">SERVICES</span></div>
+                    <div class="c-stat"><span class="v">99.9%</span><span class="l">ACCURACY</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -504,7 +514,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=11"></script>
+    <script src="script.js?v=12"></script>
 </body>
 
 </html>
