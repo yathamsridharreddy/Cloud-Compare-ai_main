@@ -428,7 +428,7 @@
                 if (response.ok) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userName', data.name);
-                    window.location.href = 'index.html';
+                    window.location.href = 'index.html?login=success';
                 } else {
                     errorMsg.textContent = data.error || data.message || 'Invalid email or password';
                     errorMsg.style.display = 'block';

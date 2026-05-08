@@ -15,6 +15,83 @@
 </head>
 
 <body>
+    <!-- Premium Intro Landing Page -->
+    <div id="introPage" class="intro-overlay">
+        <!-- Top Navigation -->
+        <nav class="intro-nav">
+            <div class="intro-nav-logo">
+                <i class="fas fa-cloud"></i> CloudCompare AI
+            </div>
+            <ul class="intro-nav-links">
+                <li><a href="#">Features</a></li>
+                <li><a href="#">Cloud Services</a></li>
+                <li><a href="#">AI Tools</a></li>
+                <li><a href="#">AI Recommendations</a></li>
+                <li><a href="#">Resources</a></li>
+                <li><a href="#">Pricing</a></li>
+            </ul>
+            <div class="intro-nav-actions">
+                <a href="login.html" class="nav-btn-link">Log In</a>
+                <button class="intro-btn primary small" onclick="enterDashboard()">Get Started</button>
+            </div>
+        </nav>
+
+        <div class="intro-content">
+            <div class="intro-badge">AI-Powered Cloud & AI Service Comparison</div>
+            <h1 class="intro-title">CLOUDCOMPARE<br><span>AI</span></h1>
+            <p class="intro-subtitle">Compare Smarter. Build Faster.</p>
+            <p class="intro-description">Your intelligent platform to compare cloud services and AI tools, get AI recommendations, and build the right tech stack.</p>
+            
+            <div class="intro-actions">
+                <button class="intro-btn primary" onclick="enterDashboard()">
+                    Get Started <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="intro-btn ghost" onclick="enterDashboard()">
+                    Explore Platform <i class="fas fa-play-circle"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="intro-footer-strip">
+            <span>TRUSTED BY DEVELOPERS & COMPANIES WORLDWIDE</span>
+            <div class="brand-strip">
+                <div class="brand"><i class="fab fa-aws"></i> <span>aws</span></div>
+                <div class="brand"><i class="fab fa-microsoft"></i> <span>Microsoft Azure</span></div>
+                <div class="brand"><i class="fab fa-google"></i> <span>Google Cloud</span></div>
+                <div class="brand"><i class="fas fa-cloud"></i> <span>ORACLE</span></div>
+                <div class="brand"><i class="fas fa-server"></i> <span>Alibaba Cloud</span></div>
+            </div>
+        </div>
+
+        <div class="intro-background">
+            <div class="glow-sphere"></div>
+            <div class="glow-sphere-2"></div>
+        </div>
+    </div>
+
+    <!-- Selection Choice Page (Post-Login) -->
+    <div id="selectionPage" class="intro-overlay" style="display: none;">
+        <div class="intro-content">
+            <h2 class="intro-subtitle" style="font-size: 3rem;">Select Your Terminal</h2>
+            <p class="intro-description">Choose the specialized engine for your architectural needs.</p>
+            
+            <div class="selection-grid">
+                <div class="selection-card" onclick="selectTool('cloud')">
+                    <div class="selection-icon"><i class="fas fa-server"></i></div>
+                    <h3>CloudCompare</h3>
+                    <p>Multi-Cloud Service Optimization & Infrastructure Comparison</p>
+                    <div class="selection-glow"></div>
+                </div>
+                <div class="selection-card" onclick="selectTool('ai')">
+                    <div class="selection-icon"><i class="fas fa-robot"></i></div>
+                    <h3>AICompare</h3>
+                    <p>LLM Benchmarking & Artificial Intelligence Tool Analysis</p>
+                    <div class="selection-glow"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Header -->
         <header class="header">
@@ -426,7 +503,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js?v=5"></script>
+    <script src="script.js?v=8"></script>
 </body>
 
 </html>

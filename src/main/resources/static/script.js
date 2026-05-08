@@ -290,15 +290,67 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // PHASE 1: OVER EXCELLENCE - Global Pulse on load
-    // Automatically perform a global compute comparison to populate the dashboard immediately
-    setTimeout(() => {
-        const categoryBtn = document.querySelector('.category-btn[data-category="compute"]');
-        if (categoryBtn) {
-            categoryBtn.click(); // Select compute
-            compare(); // Trigger analysis
-        }
-    }, 1500);
+    // MOVED: Flow now handled by enterDashboard, Auth, and Selection logic
+    handlePlatformFlow();
 });
+
+function handlePlatformFlow() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPostLogin = urlParams.get('login') === 'success';
+    const token = localStorage.getItem('token');
+    const intro = document.getElementById('introPage');
+    const selection = document.getElementById('selectionPage');
+
+    if (!token) {
+        // No auth - always show intro
+        if (intro) intro.style.display = 'flex';
+    } else if (isPostLogin) {
+        // Just logged in - show selection
+        if (intro) intro.style.display = 'none';
+        if (selection) selection.style.display = 'flex';
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        // Already logged in and returning - show dashboard directly
+        if (intro) intro.style.display = 'none';
+        if (selection) selection.style.display = 'none';
+        // (Optional: Trigger pulse if you want it to auto-run for returning users)
+        // triggerGlobalPulse();
+    }
+}
+
+function enterDashboard() {
+    // ALWAYS go to login/signup first as requested
+    window.location.href = 'login.html';
+}
+
+function selectTool(tool) {
+    const selection = document.getElementById('selectionPage');
+    if (selection) {
+        selection.classList.add('hide');
+        setTimeout(() => {
+            selection.style.display = 'none';
+            // Switch view based on selection
+            if (tool === 'ai') {
+                toggleView('ai');
+            } else {
+                toggleView('cloud');
+            }
+            // Start Global Pulse
+            triggerGlobalPulse();
+        }, 800);
+    }
+}
+
+function triggerGlobalPulse() {
+    console.log("Triggering Global Pulse Analysis...");
+    // Check current view to click the right button
+    const activeBtn = document.querySelector('.toggle-btn.active');
+    const compareBtn = document.querySelector('.compare-btn');
+    if (compareBtn) {
+        compareBtn.click(); // Trigger analysis for current view
+    }
+}
 
 function showKnowledgeModal(title, content) {
     const modal = document.getElementById('knowledgeModal');
@@ -384,7 +436,7 @@ function checkAuthState() {
             logoutBtn.onclick = function () {
                 localStorage.removeItem('token');
                 localStorage.removeItem('userName');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             };
         }
     } else {
