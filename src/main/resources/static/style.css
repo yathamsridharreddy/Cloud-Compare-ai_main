@@ -1604,3 +1604,20 @@ body.light-theme .provider-chip.active {
 .particle-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 .particle { position: absolute; background: #d4a017; border-radius: 50%; opacity: 0.3; filter: blur(1px); animation: drift 20s linear infinite; }
 @keyframes drift { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-100px) rotate(360deg); } }
+
+/* Ultra-Premium Hero & Auth Enhancements */
+.hero-image-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120%; height: 120%; z-index: -1; opacity: 0.4; filter: blur(20px); pointer-events: none; }
+.hero-image { width: 100%; height: 100%; object-fit: cover; animation: slowZoom 20s infinite alternate; }
+@keyframes slowZoom { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+/* Interactive Auth Card Tilt */
+.auth-card { transform-style: preserve-3d; transition: transform 0.1s ease-out; }
+.auth-card:hover { border-color: rgba(212, 160, 23, 0.5); }
+
+/* Error Shake Animation */
+.shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+/* Success Particle Burst */
+.success-particle { position: fixed; width: 10px; height: 10px; background: #fbbf24; border-radius: 50%; pointer-events: none; z-index: 30000; animation: burst 1s ease-out forwards; }
+@keyframes burst { from { transform: translate(0, 0) scale(1); opacity: 1; } to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }

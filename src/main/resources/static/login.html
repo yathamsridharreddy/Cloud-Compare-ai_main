@@ -371,10 +371,14 @@
                 try { data = JSON.parse(text); } catch(e) { data = {}; }
 
                 if (response.ok) {
+                    createSuccessBurst();
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userName', data.name);
-                    window.location.href = 'index.html?login=success';
+                    setTimeout(() => {
+                        window.location.href = 'index.html?login=success';
+                    }, 1200);
                 } else {
+                    triggerErrorShake();
                     errorMsg.textContent = data.error || data.message || 'Invalid email or password';
                     errorMsg.style.display = 'block';
                 }
@@ -414,6 +418,35 @@
             }
         }
         initParticleSystem();
+
+        // UI EXCELLENCE: 3D Card Tilt Effect
+        const card = document.querySelector('.auth-card');
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            card.style.transform = `perspective(1000px) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        // UI EXCELLENCE: Success Particle Burst
+        function createSuccessBurst() {
+            for (let i = 0; i < 50; i++) {
+                const p = document.createElement('div');
+                p.className = 'success-particle';
+                p.style.setProperty('--tx', `${(Math.random() - 0.5) * 400}px`);
+                p.style.setProperty('--ty', `${(Math.random() - 0.5) * 400}px`);
+                p.style.left = '50%';
+                p.style.top = '50%';
+                p.style.background = Math.random() > 0.5 ? '#d4a017' : '#fbbf24';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        // Trigger shake on error
+        function triggerErrorShake() {
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+        }
     </script>
 </body>
 </html>
