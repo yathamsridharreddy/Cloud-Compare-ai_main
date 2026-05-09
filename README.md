@@ -105,6 +105,13 @@ The system utilizes a centralized `@ControllerAdvice` to ensure consistent error
 - **Security Failures**: Graceful `403 Forbidden` responses for unauthorized access.
 - **System Errors**: Structured `500 Internal Server Error` without leaking sensitive stack traces.
 
+### Operational Security Posture (Hardened)
+The platform recently underwent a comprehensive security audit and architectural hardening process:
+- **Zero-Trust JWT Enforcement**: Strict `authenticated()` requirements enforced on all AI comparison and sensitive endpoints.
+- **Credential Externalization**: Elimination of all hardcoded secrets; strict dependency on secure environment variables (`GROK_API_KEYS`, `JWT_SECRET`, `DB_PASSWORD`).
+- **Strict CORS Policy**: Restricted cross-origin requests to explicit client domains rather than wildcard `*`.
+- **Architectural Purity**: Transitioned to 100% constructor injection for immutable dependencies and centralized `GlobalExceptionHandler` mapping to standardized `ApiResponse` shapes.
+
 ---
 
 ## 🚦 Getting Started

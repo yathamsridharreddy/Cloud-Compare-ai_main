@@ -53,14 +53,17 @@ public class GrokClientService {
     @Value("${grok.max-retries:2}")
     private int maxRetries;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    private MockDataService mockDataService;
+    private final MockDataService mockDataService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
     private final AtomicInteger keyIndex = new AtomicInteger(0);
+
+    public GrokClientService(MockDataService mockDataService) {
+        this.mockDataService = mockDataService;
+    }
 
     private String getNextApiKey() {
         List<String> keys = getApiKeys();

@@ -2,6 +2,7 @@ package com.cloudcompare.ai.service;
 
 import com.cloudcompare.ai.dto.*;
 import com.cloudcompare.ai.entity.CloudServiceEntity;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -285,28 +286,7 @@ public class RankingService {
 
     private ServiceResult cloneResult(ServiceResult s) {
         ServiceResult c = new ServiceResult();
-        c.setId(s.getId());
-        c.setPlatform(s.getPlatform());
-        c.setServiceName(s.getServiceName());
-        c.setCategory(s.getCategory());
-        c.setCpu(s.getCpu());
-        c.setRam(s.getRam());
-        c.setStorage(s.getStorage());
-        c.setPricePerHour(s.getPricePerHour());
-        c.setPricePerGb(s.getPricePerGb());
-        c.setPerformanceScore(s.getPerformanceScore());
-        c.setPopularityScore(s.getPopularityScore());
-        c.setRegion(s.getRegion());
-        c.setDescription(s.getDescription());
-        c.setCost(s.getCost());
-        c.setCostPerHour(s.getCostPerHour());
-        c.setCostPerDay(s.getCostPerDay());
-        c.setCostPerWeek(s.getCostPerWeek());
-        c.setCostPerMonth(s.getCostPerMonth());
-        c.setScore(s.getScore());
-        c.setPerformanceLevel(s.getPerformanceLevel());
-        c.setCostScore(s.getCostScore());
-        c.setRank(s.getRank());
+        BeanUtils.copyProperties(s, c);
         return c;
     }
 

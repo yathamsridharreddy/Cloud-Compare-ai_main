@@ -3,11 +3,13 @@ package com.cloudcompare.ai.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import lombok.Data;
 
 /**
  * Request body for POST /api/compare
  * Mirrors the express-validator rules from routes.js
  */
+@Data
 public class CompareRequest {
 
     @Pattern(regexp = "compute|storage|database|ai", message = "Invalid category")
@@ -33,29 +35,4 @@ public class CompareRequest {
 
     private String priority = "balanced";
     private String serviceType = "all";
-
-    // Getters and Setters
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public int getHours() { return hours; }
-    public void setHours(int hours) { this.hours = hours; }
-
-    public String getRegion() { return region; }
-    public void setRegion(String region) { this.region = region; }
-
-    public int getCpu() { return cpu; }
-    public void setCpu(int cpu) { this.cpu = cpu; }
-
-    public int getRam() { return ram; }
-    public void setRam(int ram) { this.ram = ram; }
-
-    public int getStorage() { return storage; }
-    public void setStorage(int storage) { this.storage = storage; }
-
-    public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
-
-    public String getServiceType() { return serviceType; }
-    public void setServiceType(String serviceType) { this.serviceType = serviceType; }
 }

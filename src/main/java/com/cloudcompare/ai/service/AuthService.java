@@ -19,7 +19,8 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern
+            .compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$");
 
     @Transactional
     public UserEntity registerUser(SignupRequest signupRequest) {
@@ -29,7 +30,8 @@ public class AuthService {
         }
 
         if (!PASSWORD_PATTERN.matcher(signupRequest.getPassword()).matches()) {
-            throw new RuntimeException("SECURITY ALERT: Password does not meet the vault-grade complexity requirements.");
+            throw new RuntimeException(
+                    "SECURITY ALERT: Password does not meet the vault-grade complexity requirements.");
         }
 
         UserEntity user = new UserEntity();

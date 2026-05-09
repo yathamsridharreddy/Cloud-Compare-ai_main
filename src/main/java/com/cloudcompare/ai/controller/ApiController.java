@@ -10,9 +10,7 @@ import com.cloudcompare.ai.service.RankingService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -28,36 +26,22 @@ public class ApiController {
 
     private static final Logger log = LoggerFactory.getLogger(ApiController.class);
 
-    @Autowired
-    private GrokClientService grokClientService;
-    
-    @Autowired
-    private MetaDataService metaDataService;
-    
-    @Autowired
-    private CacheService cacheService;
-    
-    @Autowired
-    private RankingService rankingService;
-    
-    @Autowired
-    private CloudServiceRepository cloudServiceRepository;
+    private final GrokClientService grokClientService;
+    private final MetaDataService metaDataService;
+    private final CacheService cacheService;
+    private final RankingService rankingService;
+    private final CloudServiceRepository cloudServiceRepository;
 
-    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(org.springframework.web.bind.MethodArgumentNotValidException e) {
-        String msg = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        return ResponseEntity.status(400).body(ApiResponse.error("Validation Failed: " + msg));
-    }
-
-    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(org.springframework.security.access.AccessDeniedException e) {
-        return ResponseEntity.status(403).body(ApiResponse.error("Access Denied: Please log in to access this feature."));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-        log.error("Unhandled exception: ", e);
-        return ResponseEntity.status(500).body(ApiResponse.error("An unexpected error occurred: " + e.getMessage()));
+    public ApiController(GrokClientService grokClientService,
+                         MetaDataService metaDataService,
+                         CacheService cacheService,
+                         RankingService rankingService,
+                         CloudServiceRepository cloudServiceRepository) {
+        this.grokClientService = grokClientService;
+        this.metaDataService = metaDataService;
+        this.cacheService = cacheService;
+        this.rankingService = rankingService;
+        this.cloudServiceRepository = cloudServiceRepository;
     }
 
     @GetMapping("/test")
