@@ -69,6 +69,16 @@ pipeline {
             }
         }
 
+        stage('Deploy Locally') {
+            steps {
+                echo 'Deploying container to local Docker Desktop...'
+                // Stop and remove existing container if it exists
+                bat "docker rm -f cloud-compare-app || exit 0"
+                // Start the new container
+                bat "docker run -d -p 8080:8080 --name cloud-compare-app ${DOCKER_IMAGE}:latest"
+            }
+        }
+
         stage('Deploy to EC2') {
             steps {
                 echo 'Deploying application to EC2 instance...'
