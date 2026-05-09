@@ -45,9 +45,11 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                echo 'Building Docker image...'
-                bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                retry(3) {
+                    echo 'Building Docker image...'
+                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                }
             }
         }
 
