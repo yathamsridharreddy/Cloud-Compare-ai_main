@@ -22,6 +22,8 @@
 
 ## 🏗️ System Architecture
 
+![CloudCompare AI Architecture](cloud_compare_ai_architecture_1778263045760.png)
+
 ```mermaid
 graph TD
     User((User)) -->|HTTPS| Frontend[Web UI - HTML/JS/CSS]
