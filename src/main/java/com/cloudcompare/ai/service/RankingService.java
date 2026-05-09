@@ -302,7 +302,9 @@ public class RankingService {
             // Strip any non-digit characters except for initial parsing
             String cleaned = val.toString().replaceAll("[^0-9.-]", "");
             return cleaned.isEmpty() ? 0 : (int) Double.parseDouble(cleaned);
-        } catch (Exception e) { return 0; }
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private double toDouble(Object val) {
@@ -312,6 +314,8 @@ public class RankingService {
             // Strip currency symbols, commas, etc.
             String cleaned = val.toString().replaceAll("[^0-9.-]", "");
             return cleaned.isEmpty() ? 0 : Double.parseDouble(cleaned);
-        } catch (Exception e) { return 0; }
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

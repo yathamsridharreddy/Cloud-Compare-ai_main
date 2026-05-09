@@ -31,4 +31,17 @@ class MetaDataServiceTest {
         assertNotNull(types);
         assertFalse(types.isEmpty());
     }
+
+    @Test
+    void testGetDefaultServiceType() {
+        assertEquals("Virtual Machines", metaDataService.getDefaultServiceType("compute"));
+        assertEquals("Object Storage", metaDataService.getDefaultServiceType("storage"));
+        assertEquals("Relational Database", metaDataService.getDefaultServiceType("database"));
+    }
+
+    @Test
+    void testGetServiceTypesInvalidCategory() {
+        List<ServiceType> types = metaDataService.getServiceTypes("invalid");
+        assertTrue(types.isEmpty());
+    }
 }

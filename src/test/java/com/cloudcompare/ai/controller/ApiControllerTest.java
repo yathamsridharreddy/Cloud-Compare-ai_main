@@ -1,8 +1,8 @@
 package com.cloudcompare.ai.controller;
 
 import com.cloudcompare.ai.dto.CompareRequest;
-import com.cloudcompare.ai.service.GrokClientService;
-import com.cloudcompare.ai.service.MetaDataService;
+import com.cloudcompare.ai.service.*;
+import com.cloudcompare.ai.repository.CloudServiceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,13 +36,21 @@ class ApiControllerTest {
     @MockBean
     private GrokClientService grokClientService;
 
+    @MockBean
+    private MetaDataService metaDataService;
+
+    @MockBean
+    private CacheService cacheService;
+
+    @MockBean
+    private RankingService rankingService;
+
+    @MockBean
+    private CloudServiceRepository cloudServiceRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
-    /**
-     * /api/compare is now JWT-protected. Use @WithMockUser to simulate
-     * an authenticated request.
-     */
     @Test
     @WithMockUser(username = "test@example.com")
     void testCompareEndpoint() throws Exception {
@@ -53,6 +63,9 @@ class ApiControllerTest {
 
         when(grokClientService.fetchComparisonFromGrok(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
+        
+        when(rankingService.buildResponse(any(), anyString(), anyString(), anyInt(), anyString(), anyInt(), anyInt(), anyInt(), anyString()))
+                .thenReturn(new com.cloudcompare.ai.dto.CompareResponse());
 
         mockMvc.perform(post("/api/compare")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -61,9 +74,6 @@ class ApiControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
-    /**
-     * Verify that /api/compare returns 403 when called without authentication.
-     */
     @Test
     void testCompareEndpointRequiresAuth() throws Exception {
         CompareRequest request = new CompareRequest();
@@ -75,9 +85,6 @@ class ApiControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    /**
-     * Verify public endpoints remain accessible without JWT.
-     */
     @Test
     void testHealthCheckIsPublic() throws Exception {
         mockMvc.perform(get("/api/test"))
