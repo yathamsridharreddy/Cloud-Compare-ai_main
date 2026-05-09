@@ -4,7 +4,7 @@ pipeline {
     environment {
         // --- Docker Properties ---
         DOCKERHUB_CREDENTIALS = 'dockerhubcred'
-        DOCKER_IMAGE = 'raghavendra2006/cloudcompare-ai'
+        DOCKER_IMAGE = 'raghavendra76/cloudcompare-ai'
         DOCKER_TAG = "v${env.BUILD_ID}"
         
         // --- EC2 Deployment Properties ---
