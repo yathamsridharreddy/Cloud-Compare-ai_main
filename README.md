@@ -112,6 +112,12 @@ The platform recently underwent a comprehensive security audit and architectural
 - **Strict CORS Policy**: Restricted cross-origin requests to explicit client domains rather than wildcard `*`.
 - **Architectural Purity**: Transitioned to 100% constructor injection for immutable dependencies and centralized `GlobalExceptionHandler` mapping to standardized `ApiResponse` shapes.
 
+### Over-Excellence Performance Architecture
+- **Java 21 Virtual Threads (Project Loom)**: Enabled to effortlessly handle thousands of concurrent blocking I/O calls to external LLMs without thread exhaustion.
+- **Caffeine High-Performance Caching**: Synchronized map bottleneck completely eliminated. Replaced with Caffeine for near-optimal lock-free concurrent read/writes.
+- **Resilience4J Circuit Breaker**: Hardened external Groq API calls. If the LLM provider degrades, the circuit breaker safely trips to fallbacks without causing cascading system failures.
+- **Network Optimization**: Enabled full GZIP payload compression to drastically reduce the size of the large JSON arrays sent to the client.
+
 ---
 
 ## 🚦 Getting Started

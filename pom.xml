@@ -18,7 +18,7 @@
     <description>Multi-Cloud Service Recommendation System — Spring Boot</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <lombok.version>1.18.38</lombok.version>
     </properties>
 
@@ -33,6 +33,23 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- High-Performance Caching -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- Circuit Breaker & Resilience -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
         <!-- Lombok (reduces boilerplate) -->
