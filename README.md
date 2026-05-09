@@ -11,6 +11,35 @@
 
 ---
 
+## 📑 Table of Contents
+1.  [Mission & Core Values](#-mission--core-values)
+2.  [Key Capabilities](#-key-capabilities)
+3.  [Architectural Blueprint](#-architectural-blueprint)
+4.  [Technical Ecosystem](#-technical-ecosystem)
+5.  [Operational Resilience](#-operational-resilience)
+6.  [Getting Started](#-getting-started)
+7.  [Developer Experience](#-developer-experience)
+8.  [Containerization & Deployment](#-containerization--deployment)
+9.  [API Governance](#-api-governance)
+10. [Troubleshooting Guide](#-troubleshooting-guide)
+11. [Engineering Excellence](#-engineering-excellence)
+12. [Security & Compliance](#-security--compliance)
+13. [Contributing & Standards](#-contributing--standards)
+14. [Acknowledgements](#-acknowledgements)
+15. [License](#-license)
+
+---
+
+## 🎯 Mission & Core Values
+
+Our mission is to democratize cloud intelligence, enabling organizations to make data-driven infrastructure decisions with sub-second precision.
+- **Accuracy**: AI-driven insights verified against real-time provider specs.
+- **Speed**: Optimized inference via the Groq LPU™ technology.
+- **Security**: Zero-trust architecture with stateless authentication.
+- **Scale**: Cloud-native design ready for horizontal expansion.
+
+---
+
 ## 🚀 Key Capabilities
 
 *   **🤖 AI-Powered Synthesis**: Utilizes Llama 3.1 via Groq API for sub-second analysis of complex cloud service specifications.
@@ -52,13 +81,29 @@ graph TD
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Backend** | Java 17, Spring Boot 3.2.5 | Core business logic & API |
-| **Security** | Spring Security 6, JJWT | Identity & Access Management |
+| **Backend Core** | Java 17, Spring Boot 3.2.5 | Core business logic & API |
+| **Identity & Security** | Spring Security 6, JJWT | Zero-trust authentication |
 | **Data Layer** | Spring Data JPA, Hibernate | Persistence & ORM |
 | **Database** | MySQL 8.3 (Prod), H2 (Dev) | Relational storage |
-| **AI Engine** | Groq API (Llama 3.1) | Real-time service analysis |
-| **DevOps** | Jenkins, Docker, SonarQube | CI/CD & Code Quality |
-| **Testing** | JUnit 5, Mockito, JaCoCo | Verification & Coverage |
+| **AI Inference** | Groq API (Llama 3.1) | Real-time service analysis |
+| **DevOps Infrastructure** | Jenkins, Docker, SonarQube | CI/CD & Code Quality |
+| **Testing Suite** | JUnit 5, Mockito, JaCoCo | Verification & Coverage |
+
+---
+
+## 🛡️ Operational Resilience
+
+### Intelligent Rate Limiting
+To ensure system stability and prevent abuse, the platform implements a sophisticated IP-based rate limiter:
+- **Threshold**: 50 requests per 15-minute window per IP.
+- **Response**: Triggers `429 Too Many Requests` with actionable feedback.
+- **Scope**: Applied strictly to all `/api/**` endpoints.
+
+### Global Exception Handling
+The system utilizes a centralized `@ControllerAdvice` to ensure consistent error responses:
+- **Validation Errors**: Returns structured `400 Bad Request` with field-level details.
+- **Security Failures**: Graceful `403 Forbidden` responses for unauthorized access.
+- **System Errors**: Structured `500 Internal Server Error` without leaking sensitive stack traces.
 
 ---
 
@@ -66,85 +111,84 @@ graph TD
 
 ### Prerequisites
 - **JDK 17+** (LTS)
-- **Docker & Docker Compose**
-- **Groq API Key** (Obtain from [Groq Console](https://console.groq.com))
+- **Docker & Docker Compose** (Desktop or Server)
+- **Groq API Key** (Available via [Groq Console](https://console.groq.com))
 
-### Configuration
-Create a `.env` file in the root directory:
-```env
-GROK_API_KEYS=your_groq_api_key
-DB_PASSWORD=your_secure_password
-DB_URL=jdbc:mysql://localhost:3306/cloud_compare_ai
-```
+### Environment Configuration
+| Variable | Description | Default / Example |
+| :--- | :--- | :--- |
+| `GROK_API_KEYS` | API Key for Groq Inference Engine | `gsk_...` |
+| `DB_PASSWORD` | Production MySQL Password | `secure_password` |
+| `DB_URL` | MySQL Connection URL | `jdbc:mysql://db:3306/cloud_compare_ai` |
 
-### Installation
+### Installation Flow
 ```bash
 # 1. Clone the repository
 git clone https://github.com/raghavendra2006/CLOUD-COMPARE-AI.git
 
-# 2. Build the application
+# 2. Configure Environment
+cp .env.example .env
+
+# 3. Build & Package
 ./mvnw clean package -DskipTests
 
-# 3. Run locally
+# 4. Launch Application
 ./mvnw spring-boot:run
 ```
 
 ---
 
+## 💻 Developer Experience
+
+### IDE Configuration
+- **Lombok Support**: Ensure the Lombok plugin is installed in your IDE (IntelliJ/Eclipse).
+- **Annotation Processing**: Enable "Enable annotation processing" in compiler settings.
+
+### Git Workflow
+We follow a strict branch-based development model:
+- `main`: Stable production branch.
+- `develop`: Integration branch for upcoming releases.
+- `feature/*`: New functionality.
+- `fix/*`: Critical bug fixes.
+
+---
+
 ## 🐳 Containerization & Deployment
 
-### Docker Compose
-Deploy the entire stack (App + MySQL) with a single command:
+### Dockerized Infrastructure
+The `Dockerfile` utilizes a high-efficiency **multi-stage build** strategy:
+1. **Build Stage**: Maven 3.9.6 + OpenJDK 21 (Alpine) for minimal build footprint.
+2. **Runtime Stage**: Eclipse Temurin JRE 21 (Alpine) to minimize attack surface and image size.
+
+### Orchestration
 ```bash
+# Deploy full stack with persistent volume support
 docker-compose up -d --build
 ```
-
-### Production CI/CD
-The `Jenkinsfile` provides a declarative pipeline including:
-1. **Build**: Compiles code and executes unit tests.
-2. **Analysis**: Runs SonarQube static analysis.
-3. **Quality Gate**: Blocks deployment if coverage or security rules fail.
-4. **Publish**: Pushes Docker images to the registry.
-5. **Deploy**: Triggers updates on the target EC2 environment.
 
 ---
 
 ## 🔌 API Governance
 
-| Method | Endpoint | Description | Auth |
+| Method | Endpoint | Purpose | Auth |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/signup` | Register a new enterprise user | None |
-| `POST` | `/api/auth/login` | Authenticate and receive JWT | None |
-| `GET` | `/api/test` | Service health & connectivity check | None |
-| `POST` | `/api/compare` | AI-driven cloud service comparison | JWT |
-| `POST` | `/api/ai-compare` | Purpose-driven AI tool analysis | JWT |
-| `GET` | `/api/regions` | Retrieve supported cloud regions | JWT |
+| `POST` | `/api/auth/signup` | Establish enterprise identity | Public |
+| `POST` | `/api/auth/login` | Secure token acquisition (JWT) | Public |
+| `GET` | `/api/test` | Engine health & heartbeat | Public |
+| `POST` | `/api/compare` | AI-driven service ranking | JWT |
+| `POST` | `/api/ai-compare` | Purpose-specific tool analysis | JWT |
+| `GET` | `/api/regions` | Multi-cloud region discovery | JWT |
 
 ---
 
-## 📂 Project Topology
+## 🔍 Troubleshooting Guide
 
-```text
-.
-├── .mvn/                # Maven Wrapper configuration
-├── src/
-│   ├── main/
-│   │   ├── java/.../ai/
-│   │   │   ├── config/      # Security & Bean configurations
-│   │   │   ├── controller/  # REST Endpoints
-│   │   │   ├── dto/         # Data Transfer Objects
-│   │   │   ├── entity/      # JPA Entities
-│   │   │   ├── security/    # JWT & Auth Logic
-│   │   │   └── service/     # Business Logic
-│   │   └── resources/
-│   │       ├── static/      # Frontend Web Assets
-│   │       └── application.properties
-│   └── test/                # JUnit 5 & Integration Tests
-├── Dockerfile           # Multi-stage Docker build
-├── docker-compose.yml   # Multi-container orchestration
-├── Jenkinsfile          # Pipeline-as-code
-└── pom.xml              # Maven dependencies
-```
+| Issue | Potential Cause | Resolution |
+| :--- | :--- | :--- |
+| `429 Too Many Requests` | Rate limit threshold exceeded | Wait 15 minutes for window reset. |
+| `502 Bad Gateway` | Groq API unreachable or key invalid | Verify `GROK_API_KEYS` in `.env`. |
+| `Connection Refused` | MySQL container not fully initialized | Ensure `db` service is healthy in Docker. |
+| `JWT Expired` | Token lifetime exceeded | Re-authenticate via `/api/auth/login`. |
 
 ---
 
@@ -154,20 +198,38 @@ We maintain a high standard of code quality through:
 - **Unit Testing**: 100% logic coverage with JUnit 5 and Mockito.
 - **Integration Testing**: End-to-end verification using `@SpringBootTest`.
 - **Static Analysis**: Integrated SonarQube scans for vulnerabilities and code smells.
-- **Performance**: Groq API optimization for sub-second AI inference.
+- **Test Coverage**: Tracked via JaCoCo reports.
 
 ```bash
-# Execute full test suite with coverage report
+# Generate full coverage report
 ./mvnw test jacoco:report
 ```
 
 ---
 
+## 🔐 Security & Compliance
+
+### Security Policy
+- **Vulnerability Reporting**: Please report security issues via the GitHub "Security" tab.
+- **Data Protection**: All sensitive credentials are encrypted at rest and never logged.
+- **Stateless Identity**: JWTs are signed using HS256 with environment-derived secrets.
+
+---
+
 ## 🤝 Contributing & Standards
 
-1.  **Commitment**: All code must pass the SonarQube quality gate.
-2.  **Workflow**: Branch-based development (`feature/*`, `fix/*`).
-3.  **Process**: Fork → Branch → Commit → PR → Review.
+1.  **Fork** the project.
+2.  **Create** your feature branch.
+3.  **Ensure** all tests pass (`./mvnw test`).
+4.  **Submit** a Pull Request with a detailed summary.
+
+---
+
+## 🙏 Acknowledgements
+
+- **[Groq](https://groq.com)**: For the lightning-fast inference engine.
+- **[Spring Boot](https://spring.io)**: For the robust application framework.
+- **[Docker](https://docker.com)**: For seamless container orchestration.
 
 ---
 
