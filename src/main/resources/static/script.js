@@ -13,6 +13,7 @@ let distributionChartInstance = null;
 let valueChartInstance = null;
 let popularityChartInstance = null;
 let trendChartInstance = null;
+let aiRatingChartInstance = null;
 
 // Track current services data for sorting
 let currentServices = [];
@@ -188,6 +189,10 @@ const aiToolUrlMap = {
     'Jasper':       'https://www.jasper.ai/',
     'Notion AI':    'https://www.notion.so/product/ai',
     'GitHub Copilot': 'https://github.com/features/copilot',
+    'DeepCode':     'https://www.deepcode.ai/',
+    'Kite':         'https://www.kite.com/',
+    'TabNine':      'https://www.tabnine.com/',
+    'Repl.it':      'https://replit.com/site/ghostwriter',
     'Cursor':       'https://cursor.sh/',
     'Suno':         'https://suno.com/',
     'ElevenLabs':   'https://elevenlabs.io/',
@@ -226,7 +231,8 @@ function getAiToolUrl(toolName) {
             return url;
         }
     }
-    return null;
+    // Fallback: Return a Google search link for the tool
+    return `https://www.google.com/search?q=${encodeURIComponent(toolName + " AI Tool")}`;
 }
 
 // Category configuration
@@ -1643,6 +1649,72 @@ function displayAiRecommendations(tools) {
         `;
         grid.appendChild(card);
     });
+
+    // Render AI Tools Rating Chart
+    if (aiRatingChartInstance) {
+        aiRatingChartInstance.destroy();
+    }
+    const ctx = document.getElementById('aiRatingChart');
+    if (ctx) {
+        const labels = tools.map(t => t.tool_name);
+        const data = tools.map(t => t.score);
+        
+        const bgColors = [
+            'rgba(251, 191, 36, 0.6)',
+            'rgba(148, 163, 184, 0.6)',
+            'rgba(205, 127, 50, 0.6)',
+            'rgba(59, 130, 246, 0.6)',
+            'rgba(16, 185, 129, 0.6)'
+        ];
+        const borderColors = [
+            'rgba(251, 191, 36, 1)',
+            'rgba(148, 163, 184, 1)',
+            'rgba(205, 127, 50, 1)',
+            'rgba(59, 130, 246, 1)',
+            'rgba(16, 185, 129, 1)'
+        ];
+
+        aiRatingChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Rating (out of 10)',
+                    data: data,
+                    backgroundColor: bgColors.slice(0, tools.length),
+                    borderColor: borderColors.slice(0, tools.length),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                ...globalChartOptions,
+                indexAxis: 'y', // Horizontal bar chart
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` Rating: ${context.raw.toFixed(1)}/10`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 10,
+                        grid: { color: "rgba(212, 160, 23, 0.08)" },
+                        ticks: { color: "#a89968" }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: "#a89968", font: { size: 12 } }
+                    }
+                }
+            }
+        });
+    }
 }
 
 // ============================================================
@@ -1673,7 +1745,7 @@ function displayAiRecommendations(tools) {
         const gridColor = isLight ? 'rgba(184,134,11,0.08)' : 'rgba(212,160,23,0.08)';
         [costChartInstance, performanceChartInstance, rankingChartInstance,
             distributionChartInstance, valueChartInstance, popularityChartInstance,
-            trendChartInstance].forEach(chart => {
+            trendChartInstance, aiRatingChartInstance].forEach(chart => {
                 if (!chart) return;
                 if (chart.options.scales?.y) {
                     chart.options.scales.y.ticks.color = tickColor;
