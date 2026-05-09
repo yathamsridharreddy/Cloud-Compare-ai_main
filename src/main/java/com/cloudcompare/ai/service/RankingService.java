@@ -16,6 +16,22 @@ import java.util.stream.Collectors;
 @Service
 public class RankingService {
 
+    private static final double DEFAULT_PERF_WEIGHT = 0.40;
+    private static final double DEFAULT_POP_WEIGHT = 0.25;
+    private static final double DEFAULT_COST_WEIGHT = 0.35;
+
+    private static final double COST_PRIORITY_PERF = 0.20;
+    private static final double COST_PRIORITY_POP = 0.15;
+    private static final double COST_PRIORITY_COST = 0.65;
+
+    private static final double PERF_PRIORITY_PERF = 0.55;
+    private static final double PERF_PRIORITY_POP = 0.20;
+    private static final double PERF_PRIORITY_COST = 0.25;
+
+    private static final int HOURS_IN_MONTH = 730;
+    private static final int HOURS_IN_DAY = 24;
+    private static final int DAYS_IN_WEEK = 7;
+
     private static final List<String> ALL_PROVIDERS = List.of("AWS", "GCP", "Azure", "OCI", "Alibaba");
 
     private static final Map<String, String> REGION_DEFAULTS = Map.of(
@@ -125,20 +141,10 @@ public class RankingService {
             List<ServiceResult> results, String category,
             int hours, String region, int cpu, int ram, int storage, String priority) {
 
-        // Determine weights
-        double performanceWeight = 0.40;
-        double popularityWeight = 0.25;
-        double costWeight = 0.35;
-
-        if ("cost".equals(priority)) {
-            performanceWeight = 0.20;
-            popularityWeight = 0.15;
-            costWeight = 0.65;
-        } else if ("performance".equals(priority)) {
-            performanceWeight = 0.55;
-            popularityWeight = 0.20;
-            costWeight = 0.25;
-        }
+        Weights w = determineWeights(priority);
+        double performanceWeight = w.performance;
+        double popularityWeight = w.popularity;
+        double costWeight = w.cost;
 
         // Precompute cost bounds
         double[] costValues = new double[results.size()];
@@ -158,20 +164,13 @@ public class RankingService {
 
         for (int i = 0; i < results.size(); i++) {
             ServiceResult s = results.get(i);
-            double costVal, costPerHour;
+            CostDetails cd = calculateCosts(s, category, hours, storage);
+            double costVal = cd.costVal;
+            double costPerHour = cd.costPerHour;
 
-            if ("storage".equals(category)) {
-                double msc = s.getPricePerGb() * (storage > 0 ? storage : 1000);
-                costPerHour = msc / 730.0;
-                costVal = costPerHour * (hours > 0 ? hours : 730);
-            } else {
-                costPerHour = s.getPricePerHour();
-                costVal = costPerHour * (hours > 0 ? hours : 730);
-            }
-
-            double costPerDay = costPerHour * 24;
-            double costPerWeek = costPerDay * 7;
-            double costPerMonth = costPerHour * 730;
+            double costPerDay = costPerHour * HOURS_IN_DAY;
+            double costPerWeek = costPerDay * DAYS_IN_WEEK;
+            double costPerMonth = costPerHour * HOURS_IN_MONTH;
 
             double performanceNorm = s.getPerformanceScore() > 0 ? s.getPerformanceScore() : 5;
             double popularityNorm = s.getPopularityScore() > 0 ? s.getPopularityScore() : 5;
@@ -288,6 +287,45 @@ public class RankingService {
         ServiceResult c = new ServiceResult();
         BeanUtils.copyProperties(s, c);
         return c;
+    }
+
+    private Weights determineWeights(String priority) {
+        if ("cost".equals(priority)) {
+            return new Weights(COST_PRIORITY_PERF, COST_PRIORITY_POP, COST_PRIORITY_COST);
+        } else if ("performance".equals(priority)) {
+            return new Weights(PERF_PRIORITY_PERF, PERF_PRIORITY_POP, PERF_PRIORITY_COST);
+        }
+        return new Weights(DEFAULT_PERF_WEIGHT, DEFAULT_POP_WEIGHT, DEFAULT_COST_WEIGHT);
+    }
+
+    private CostDetails calculateCosts(ServiceResult s, String category, int hours, int storage) {
+        double costVal, costPerHour;
+        if ("storage".equals(category)) {
+            double msc = s.getPricePerGb() * (storage > 0 ? storage : 1000);
+            costPerHour = msc / (double) HOURS_IN_MONTH;
+            costVal = costPerHour * (hours > 0 ? hours : HOURS_IN_MONTH);
+        } else {
+            costPerHour = s.getPricePerHour();
+            costVal = costPerHour * (hours > 0 ? hours : HOURS_IN_MONTH);
+        }
+        return new CostDetails(costVal, costPerHour);
+    }
+
+    private static class Weights {
+        double performance, popularity, cost;
+        Weights(double perf, double pop, double cost) {
+            this.performance = perf;
+            this.popularity = pop;
+            this.cost = cost;
+        }
+    }
+
+    private static class CostDetails {
+        double costVal, costPerHour;
+        CostDetails(double costVal, double costPerHour) {
+            this.costVal = costVal;
+            this.costPerHour = costPerHour;
+        }
     }
 
     private double round(double value, int places) {
