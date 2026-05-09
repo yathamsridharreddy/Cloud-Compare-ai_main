@@ -1726,7 +1726,55 @@ async function generateAiSummary(services) {
 }
 
 function exportToPDF() {
-    alert('Generating Professional Architect PDF Report... (Integration coming in production build)');
+    if (typeof html2pdf === 'undefined') {
+        alert('PDF generator library is not loaded. Please try again later.');
+        return;
+    }
+
+    const element = document.getElementById('resultsSection');
+    
+    // Temporarily adjust styling for better PDF rendering
+    const originalBackground = element.style.background;
+    element.style.background = '#0f172a'; // Ensure dark background is captured
+    element.style.padding = '20px';
+    
+    // Hide buttons we don't want in the PDF
+    const actionBtns = document.querySelectorAll('.summary-actions, .filter-btn, .sort-select');
+    actionBtns.forEach(btn => btn.style.display = 'none');
+
+    // Notify user
+    const btn = document.querySelector('button[onclick="exportToPDF()"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+
+    const opt = {
+        margin:       10,
+        filename:     `CloudCompare_Architect_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Restore styling and buttons
+        element.style.background = originalBackground;
+        element.style.padding = '';
+        actionBtns.forEach(btn => btn.style.display = '');
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }).catch(err => {
+        console.error('PDF generation error:', err);
+        alert('Failed to generate PDF report.');
+        
+        // Restore styling and buttons on error too
+        element.style.background = originalBackground;
+        element.style.padding = '';
+        actionBtns.forEach(btn => btn.style.display = '');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
 }
 
 function exportToCSV() {
