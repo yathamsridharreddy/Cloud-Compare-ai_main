@@ -19,34 +19,25 @@ class GrokClientServiceIntegrationTest {
     private GrokClientService grokClientService;
 
     @Test
-    void testFetchComparisonFallback() {
+    void testFetchComparisonFallback() throws Exception {
         // Since we are in the 'test' profile and GROK_API_KEYS is not set, 
         // it should use the mock fallback.
-        try {
-            List<Map<String, Object>> results = grokClientService.fetchComparisonFromGrok("compute", "t3.medium");
-            assertNotNull(results);
-            assertEquals(5, results.size());
-            assertEquals("AWS", results.get(0).get("provider"));
-        } catch (Exception e) {
-            fail("Fallback should not throw exception: " + e.getMessage());
-        }
+        List<Map<String, Object>> results = grokClientService.fetchComparisonFromGrok("compute", "t3.medium");
+        assertNotNull(results);
+        assertEquals(5, results.size());
+        assertEquals("AWS", results.get(0).get("provider"));
     }
 
     @Test
-    void testFetchAiToolsFallback() {
-        try {
-            List<AiToolResult> results = grokClientService.fetchAiToolsComparisonFromGrok("coding assistant");
-            assertNotNull(results);
-            assertFalse(results.isEmpty());
-            assertEquals("ChatGPT", results.get(0).getToolName());
-        } catch (Exception e) {
-            fail("Fallback should not throw exception: " + e.getMessage());
-        }
+    void testFetchAiToolsFallback() throws Exception {
+        List<AiToolResult> results = grokClientService.fetchAiToolsComparisonFromGrok("coding assistant");
+        assertNotNull(results);
+        assertFalse(results.isEmpty());
+        assertEquals("ChatGPT", results.get(0).getToolName());
     }
 
     @Test
     void testExplicitFallbackMethod() {
-        // Test the @CircuitBreaker fallback method directly
         List<Map<String, Object>> results = grokClientService.fetchComparisonFallback("compute", "t3.medium", new RuntimeException("Test trip"));
         assertNotNull(results);
         assertEquals(5, results.size());

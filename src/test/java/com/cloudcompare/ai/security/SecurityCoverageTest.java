@@ -20,7 +20,8 @@ class SecurityCoverageTest {
 
     @Test
     void testJwtUtil() {
-        JwtUtil jwtUtil = new JwtUtil("7a92b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z1a2b3c4d5e6", 3600000L);
+        String dummySecret = "a".repeat(64); // Long enough for HS256
+        JwtUtil jwtUtil = new JwtUtil(dummySecret, 3600000L);
         UserDetails userDetails = new User("testuser", "password", new ArrayList<>());
         
         String token = jwtUtil.generateToken(userDetails);

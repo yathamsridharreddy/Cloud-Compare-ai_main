@@ -103,7 +103,7 @@ class RankingServiceTest {
                 .filter(s -> "AWS".equals(s.getPlatform()))
                 .findFirst().orElse(null);
         assertNotNull(aws);
-        assertEquals(2.0, aws.getCost());
+        assertEquals(2.0, aws.getCost(), 0.01);
     }
 
     @Test

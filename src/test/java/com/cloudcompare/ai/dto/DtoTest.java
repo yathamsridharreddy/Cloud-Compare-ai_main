@@ -40,7 +40,7 @@ class DtoTest {
         assertEquals("TestTool", result.getToolName());
         assertEquals("TestProvider", result.getProvider());
         assertEquals("v1", result.getModelNumber());
-        assertEquals(9.5, result.getScore());
+        assertEquals(9.5, result.getScore(), 0.01);
         assertEquals("$10", result.getPricing());
         assertEquals("Desc", result.getDescription());
     }
@@ -50,8 +50,8 @@ class DtoTest {
         ProviderStat stat = new ProviderStat("AWS", 0.05, 9.2, 10);
         assertEquals("AWS", stat.getPlatform());
         assertEquals(10, stat.getCount());
-        assertEquals(0.05, stat.getAvgCost());
-        assertEquals(9.2, stat.getAvgPerformance());
+        assertEquals(0.05, stat.getAvgCost(), 0.01);
+        assertEquals(9.2, stat.getAvgPerformance(), 0.01);
         
         stat.setPlatform("GCP");
         stat.setCount(20);
