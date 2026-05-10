@@ -8,9 +8,9 @@ from jose import jwt, JWTError
 
 # --- Configuration ---
 
-SECRET_KEY = os.getenv("JWT_SECRET")
-if not SECRET_KEY:
-    raise RuntimeError("JWT_SECRET environment variable is not set. Add it to your .env or Render config.")
+SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret-key-change-in-production-min-32-chars-very-important-!!!")
+if not os.getenv("JWT_SECRET"):
+    print("⚠️  WARNING: JWT_SECRET not set. Using development default. Set JWT_SECRET env var for production.")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
