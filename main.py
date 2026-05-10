@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from database import engine, Base
 from routers import api, auth
 
@@ -25,6 +26,5 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(api.router, prefix="/api", tags=["api"])
 
-@app.get("/")
-def read_root():
-    return {"message": "CloudCompare AI API is running. Go to /docs for Swagger UI."}
+# Serve static files (HTML, CSS, JS) from the 'static' directory
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
