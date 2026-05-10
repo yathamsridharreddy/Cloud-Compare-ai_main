@@ -49,7 +49,7 @@ def safe_int(val: Any) -> int:
         return 0
 
 def build_response(grok_results: List[Dict[str, Any]], category: str, service_type: str,
-                   hours: int, region: str, cpu: int, ram: int, storage: int, priority: str):
+                   hours: int, region: str, cpu: int, ram: int, storage: int, priority: str, selected_services: List[str] = None):
     merged = {}
 
     for g in grok_results:
@@ -71,14 +71,15 @@ def build_response(grok_results: List[Dict[str, Any]], category: str, service_ty
             "description": g.get("description", service_type)
         }
 
-    for prov in ALL_PROVIDERS:
-        if prov not in merged:
-            merged[prov] = {
-                "id": 0, "platform": prov, "service_name": f"{prov} {service_type}", "category": category,
-                "cpu": 0, "ram": 0, "storage": 0, "price_per_hour": 0.0, "price_per_gb": 0.0,
-                "performance_score": 5.0, "popularity_score": 5.0, "region": REGION_DEFAULTS.get(prov, "global"),
-                "description": f"{service_type} (data pending)"
-            }
+    if not selected_services:
+        for prov in ALL_PROVIDERS:
+            if prov not in merged:
+                merged[prov] = {
+                    "id": 0, "platform": prov, "service_name": f"{prov} {service_type}", "category": category,
+                    "cpu": 0, "ram": 0, "storage": 0, "price_per_hour": 0.0, "price_per_gb": 0.0,
+                    "performance_score": 5.0, "popularity_score": 5.0, "region": REGION_DEFAULTS.get(prov, "global"),
+                    "description": f"{service_type} (data pending)"
+                }
 
     results = list(merged.values())
 

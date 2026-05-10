@@ -82,27 +82,49 @@ async def call_groq_api(prompt: str) -> str:
         data = response.json()
         return data["choices"][0]["message"]["content"].strip()
 
-async def fetch_comparison_from_grok(category: str, service_type: str) -> list:
+async def fetch_comparison_from_grok(category: str, service_type: str, selected_services: list = None) -> list:
     try:
-        prompt = (
-            f"You are an expert cloud infrastructure analyst. Compare the \"{service_type}\" "
-            f"services offered by AWS, Google Cloud (GCP), Microsoft Azure, Oracle Cloud (OCI), and Alibaba Cloud under the \"{category}\" category.\n\n"
-            "Return a JSON array with EXACTLY 5 objects (one per provider). Each object must have:\n"
-            "{\n"
-            "  \"provider\": \"<AWS|GCP|Azure|OCI|Alibaba>\",\n"
-            "  \"service_name\": \"<official product name e.g. EC2, Compute Engine, Virtual Machines>\",\n"
-            "  \"performance_score\": <1-10 numerical value>,\n"
-            "  \"popularity_score\": <1-10 numerical value>,\n"
-            "  \"price_per_hour\": <RAW NUMBER ONLY, e.g. 0.045>,\n"
-            "  \"price_per_gb\": <RAW NUMBER ONLY, e.g. 0.02>,\n"
-            "  \"cpu\": <RAW NUMBER ONLY, vCPUs>,\n"
-            "  \"ram\": <RAW NUMBER ONLY, GB>,\n"
-            "  \"storage\": <RAW NUMBER ONLY, GB>,\n"
-            "  \"region\": \"<region code>\",\n"
-            "  \"description\": \"<unique 1-sentence description specific to this provider>\"\n"
-            "}\n\n"
-            "Each provider MUST have a DIFFERENT real official service name. Return ONLY the raw JSON array."
-        )
+        if selected_services and len(selected_services) > 0:
+            services_str = ", ".join(selected_services)
+            prompt = (
+                f"You are an expert cloud infrastructure analyst. Compare EXACTLY these specific cloud services: {services_str} "
+                f"under the \"{category}\" category.\n\n"
+                f"Return a JSON array with EXACTLY {len(selected_services)} objects (one per requested service). Each object must have:\n"
+                "{\n"
+                "  \"provider\": \"<AWS|GCP|Azure|OCI|Alibaba>\",\n"
+                "  \"service_name\": \"<official product name e.g. EC2>\",\n"
+                "  \"performance_score\": <1-10 numerical value>,\n"
+                "  \"popularity_score\": <1-10 numerical value>,\n"
+                "  \"price_per_hour\": <RAW NUMBER ONLY, e.g. 0.045>,\n"
+                "  \"price_per_gb\": <RAW NUMBER ONLY, e.g. 0.02>,\n"
+                "  \"cpu\": <RAW NUMBER ONLY, vCPUs>,\n"
+                "  \"ram\": <RAW NUMBER ONLY, GB>,\n"
+                "  \"storage\": <RAW NUMBER ONLY, GB>,\n"
+                "  \"region\": \"<region code>\",\n"
+                "  \"description\": \"<unique 1-sentence description specific to this provider>\"\n"
+                "}\n\n"
+                "Output ONLY the raw JSON array."
+            )
+        else:
+            prompt = (
+                f"You are an expert cloud infrastructure analyst. Compare the \"{service_type}\" "
+                f"services offered by AWS, Google Cloud (GCP), Microsoft Azure, Oracle Cloud (OCI), and Alibaba Cloud under the \"{category}\" category.\n\n"
+                "Return a JSON array with EXACTLY 5 objects (one per provider). Each object must have:\n"
+                "{\n"
+                "  \"provider\": \"<AWS|GCP|Azure|OCI|Alibaba>\",\n"
+                "  \"service_name\": \"<official product name e.g. EC2, Compute Engine, Virtual Machines>\",\n"
+                "  \"performance_score\": <1-10 numerical value>,\n"
+                "  \"popularity_score\": <1-10 numerical value>,\n"
+                "  \"price_per_hour\": <RAW NUMBER ONLY, e.g. 0.045>,\n"
+                "  \"price_per_gb\": <RAW NUMBER ONLY, e.g. 0.02>,\n"
+                "  \"cpu\": <RAW NUMBER ONLY, vCPUs>,\n"
+                "  \"ram\": <RAW NUMBER ONLY, GB>,\n"
+                "  \"storage\": <RAW NUMBER ONLY, GB>,\n"
+                "  \"region\": \"<region code>\",\n"
+                "  \"description\": \"<unique 1-sentence description specific to this provider>\"\n"
+                "}\n\n"
+                "Each provider MUST have a DIFFERENT real official service name. Return ONLY the raw JSON array."
+            )
         raw = await call_groq_api(prompt)
         cleaned = extract_json(raw)
         return json.loads(cleaned)
@@ -110,28 +132,45 @@ async def fetch_comparison_from_grok(category: str, service_type: str) -> list:
         logger.warning(f"Groq API failed. Falling back to mock data. Error: {e}")
         return get_mock_comparison(service_type)
 
-async def fetch_ai_tools_comparison(purpose: str) -> list:
+async def fetch_ai_tools_comparison(purpose: str = None, selected_tools: list = None) -> list:
     try:
-        prompt = (
-            f"You are an AI tools expert. A user wants to: \"{purpose}\".\n\n"
-            f"Recommend the TOP 5 BEST and MOST RELEVANT AI tools SPECIFICALLY for: \"{purpose}\".\n"
-            "Each tool must be DIFFERENT and specifically suited for this exact use case.\n\n"
-            "Return a JSON array with EXACTLY 5 objects:\n"
-            "[\n"
-            "  {\n"
-            "    \"tool_name\": \"<exact tool name>\",\n"
-            "    \"provider\": \"<company name>\",\n"
-            "    \"model_number\": \"<specific model or version>\",\n"
-            "    \"score\": <relevance 1-10 as plain number>,\n"
-            "    \"pricing\": \"<actual pricing>\",\n"
-            "    \"description\": \"<why this tool is great SPECIFICALLY for the given purpose>\"\n"
-            "  }\n"
-            "]\n\n"
-            "CRITICAL: All 5 tools must be UNIQUE. Score must be a plain number. Output ONLY the raw JSON array."
-        )
+        if selected_tools and len(selected_tools) > 0:
+            tools_str = ", ".join(selected_tools)
+            prompt = (
+                f"You are an AI tools expert. A user wants to compare the following specific AI tools: {tools_str}.\n\n"
+                "Return a JSON array comparing EXACTLY these tools.\n"
+                "Each object must have:\n"
+                "{\n"
+                "  \"tool_name\": \"<tool name>\",\n"
+                "  \"provider\": \"<company name>\",\n"
+                "  \"model_number\": \"<specific model or version>\",\n"
+                "  \"score\": <relevance 1-10 as plain number>,\n"
+                "  \"pricing\": \"<actual pricing>\",\n"
+                "  \"description\": \"<why this tool is better/worse in this specific comparison>\"\n"
+                "}\n\n"
+                "Output ONLY the raw JSON array containing exactly the requested tools."
+            )
+        else:
+            prompt = (
+                f"You are an AI tools expert. A user wants to: \"{purpose}\".\n\n"
+                f"Recommend the TOP 5 BEST and MOST RELEVANT AI tools SPECIFICALLY for: \"{purpose}\".\n"
+                "Each tool must be DIFFERENT and specifically suited for this exact use case.\n\n"
+                "Return a JSON array with EXACTLY 5 objects:\n"
+                "[\n"
+                "  {\n"
+                "    \"tool_name\": \"<exact tool name>\",\n"
+                "    \"provider\": \"<company name>\",\n"
+                "    \"model_number\": \"<specific model or version>\",\n"
+                "    \"score\": <relevance 1-10 as plain number>,\n"
+                "    \"pricing\": \"<actual pricing>\",\n"
+                "    \"description\": \"<why this tool is great SPECIFICALLY for the given purpose>\"\n"
+                "  }\n"
+                "]\n\n"
+                "CRITICAL: All 5 tools must be UNIQUE. Score must be a plain number. Output ONLY the raw JSON array."
+            )
         raw = await call_groq_api(prompt)
         cleaned = extract_json(raw)
         return json.loads(cleaned)
     except Exception as e:
         logger.warning(f"Groq API failed for AI tools. Falling back to mock data. Error: {e}")
-        return get_mock_ai_tools(purpose)
+        return get_mock_ai_tools(purpose or "general comparison")

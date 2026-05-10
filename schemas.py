@@ -23,9 +23,11 @@ class CompareRequest(BaseModel):
     ram: int = 0
     storage: int = 0
     priority: str = "balanced"
+    selected_services: Optional[List[str]] = None
 
 class AiCompareRequest(BaseModel):
-    purpose: str
+    purpose: Optional[str] = None
+    selected_tools: Optional[List[str]] = None
 
 class ServiceResult(BaseModel):
     id: int
