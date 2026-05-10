@@ -26,7 +26,7 @@ public class AuthService {
     public UserEntity registerUser(SignupRequest signupRequest) {
         // Elite Backend Validation
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new RuntimeException("CRITICAL: Email synchronization failed - Account already exists.");
+            throw new com.cloudcompare.ai.exception.BusinessException("Oops! You already have an account.\nSign in to continue.");
         }
 
         if (!PASSWORD_PATTERN.matcher(signupRequest.getPassword()).matches()) {

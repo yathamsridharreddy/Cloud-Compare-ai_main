@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudCompare AI - Pure AWS Infrastructure (ECS Fargate, RDS, Secrets Manager)'
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Select your existing VPC.
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Select at least two subnets for the Load Balancer and ECS Tasks.
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Database password for RDS and Secrets Manager.
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT Secret Key for the application.
+
+Resources:
+  # 1. AWS Secrets Manager (No Hardcoding)
+  AppSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: /cloudcompare/secrets
+      Description: "Secrets for CloudCompare AI Spring Boot App"
+      SecretString: !Sub '{"DB_HOST":"${CloudCompareDB.Endpoint.Address}","DB_USER":"admin","DB_PASSWORD":"${DBPassword}","JWT_SECRET":"${JwtSecret}"}'
+
+  # 2. Application Load Balancer
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP traffic
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8080
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: ip
+      HealthCheckPath: /
+
+  # 3. ECS Cluster & Fargate Task
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: cloudcompare-cluster
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+
+  AppTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: cloudcompare-ai
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: cloudcompare-container
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/cloudcompare-ai:latest'
+          PortMappings:
+            - ContainerPort: 8080
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/cloudcompare-ai
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  # 4. Amazon RDS (MySQL)
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow MySQL access from ECS
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+
+  CloudCompareDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: mysql
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: '20'
+      DBName: cloudcompare
+      MasterUsername: admin
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      PubliclyAccessible: false
+
+Outputs:
+  WebsiteURL:
+    Description: URL of the Application Load Balancer
+    Value: !Join ['', ['http://', !GetAtt ApplicationLoadBalancer.DNSName]]

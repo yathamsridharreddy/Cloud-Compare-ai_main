@@ -3,7 +3,7 @@
 // ============================================================
 
 // Configuration - API Base URL
-const API_BASE_URL = window.location.origin === 'null' || window.location.origin === 'file://' || window.location.port === '5000' ? 'http://localhost:5000' : (window.location.origin || 'http://localhost:5000');
+const API_BASE_URL = window.location.origin === 'null' || window.location.origin === 'file://' || window.location.port === '8080' ? 'http://localhost:8080' : (window.location.origin || 'http://localhost:8080');
 
 // Global chart instances
 let costChartInstance = null;
@@ -550,6 +550,7 @@ async function compare() {
                 // Do not redirect, just clear local storage if invalid token was sent
                 localStorage.removeItem('token');
                 localStorage.removeItem('userName');
+                window.location.href = 'login.html';
             }
             throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -1567,9 +1568,10 @@ async function compareAiTools() {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                // Do not redirect
+                // Redirect to login
                 localStorage.removeItem('token');
                 localStorage.removeItem('userName');
+                window.location.href = 'login.html';
             }
             throw new Error(`HTTP error! status: ${res.status}`);
         }

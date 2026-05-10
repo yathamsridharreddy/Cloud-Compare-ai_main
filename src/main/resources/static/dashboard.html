@@ -16,7 +16,7 @@
         // AUTH PROTECTION: Redirect to landing page if not logged in
         (function() {
             const token = localStorage.getItem('token');
-            if (!token && !window.location.search.includes('login=success')) {
+            if (!token) {
                 window.location.href = 'index.html';
             }
         })();
