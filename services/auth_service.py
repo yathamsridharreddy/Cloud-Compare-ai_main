@@ -1,9 +1,8 @@
 import os
 import hashlib
+import bcrypt as _bcrypt
 from datetime import datetime, timedelta, timezone
 
-# pyrefly: ignore [missing-import]
-from passlib.context import CryptContext
 from jose import jwt, JWTError
 
 # --- Configuration ---
@@ -15,24 +14,20 @@ if not os.getenv("JWT_SECRET"):
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 # --- Password Hashing ---
+# SHA-256 pre-hash produces a 64-char hex string — always within bcrypt's 72-byte limit.
 
-def _prehash(password: str) -> str:
-    """
-    Pre-hash with SHA-256 before passing to bcrypt.
-    Guarantees output is always a 64-char hex string,
-    safely under bcrypt's 72-byte hard limit.
-    """
-    return hashlib.sha256(password.encode("utf-8")).hexdigest()
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(_prehash(plain_password), hashed_password)
+def _prehash(password: str) -> bytes:
+    """Return SHA-256 hex digest of password as UTF-8 bytes (64 bytes, under bcrypt's 72-byte cap)."""
+    return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(_prehash(password))
+    hashed = _bcrypt.hashpw(_prehash(password), _bcrypt.gensalt())
+    return hashed.decode("utf-8")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return _bcrypt.checkpw(_prehash(plain_password), hashed_password.encode("utf-8"))
 
 
 # --- JWT Tokens ---
