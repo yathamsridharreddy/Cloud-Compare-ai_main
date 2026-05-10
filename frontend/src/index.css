@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #06060c;
+  color: #fff;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #06060c; }
+::-webkit-scrollbar-thumb { background: #1c1c28; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a2a3a; }
+
+/* ── Selection ──────────────────────────────────────────────────── */
+::selection { background: rgba(0, 112, 243, 0.3); color: #fff; }
+
+/* ── Wave Lines Background ──────────────────────────────────────── */
+.bg-waves {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(circle at 50% 100%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+                    repeating-radial-gradient(ellipse at 50% 150%, transparent 0, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ── Glass card ─────────────────────────────────────────────────── */
+.glass {
+  background: rgba(14, 14, 22, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-panel {
+  background: #0e0e16;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── Neon glow borders ──────────────────────────────────────────── */
+.glow-card-blue {
+  border: 1px solid rgba(0, 112, 243, 0.3);
+  box-shadow: 0 0 40px rgba(0, 112, 243, 0.1), inset 0 0 20px rgba(0, 112, 243, 0.05);
+}
+.glow-card-blue:hover {
+  border: 1px solid rgba(0, 112, 243, 0.6);
+  box-shadow: 0 0 60px rgba(0, 112, 243, 0.2), inset 0 0 30px rgba(0, 112, 243, 0.1);
+}
+
+.glow-card-purple {
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  box-shadow: 0 0 40px rgba(138, 43, 226, 0.1), inset 0 0 20px rgba(138, 43, 226, 0.05);
+}
+.glow-card-purple:hover {
+  border: 1px solid rgba(138, 43, 226, 0.6);
+  box-shadow: 0 0 60px rgba(138, 43, 226, 0.2), inset 0 0 30px rgba(138, 43, 226, 0.1);
+}
+
+/* ── Gradient text ──────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #00d2ff 0%, #8a2be2 50%, #ff2d9b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.btn-blue {
+  background: rgba(0, 112, 243, 0.1);
+  color: #00d2ff;
+  border: 1px solid rgba(0, 112, 243, 0.3);
+  transition: all 0.2s ease;
+}
+.btn-blue:hover {
+  background: rgba(0, 112, 243, 0.2);
+  border-color: rgba(0, 112, 243, 0.5);
+  box-shadow: 0 0 15px rgba(0, 112, 243, 0.2);
+}
+
+.btn-purple {
+  background: rgba(138, 43, 226, 0.1);
+  color: #d8b4fe;
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  transition: all 0.2s ease;
+}
+.btn-purple:hover {
+  background: rgba(138, 43, 226, 0.2);
+  border-color: rgba(138, 43, 226, 0.5);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
+}
+
+/* ── Input style ────────────────────────────────────────────────── */
+.input-dark {
+  background: #06060c;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-dark:focus {
+  border-color: #0070f3;
+}
+.input-dark::placeholder { color: #64748b; }
+
+/* ── Dashboard Sidebar Links ────────────────────────────────────── */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+}
+.sidebar-link.active {
+  background: rgba(0, 112, 243, 0.1);
+  color: #0070f3;
+}
+.sidebar-link.active-purple {
+  background: rgba(138, 43, 226, 0.1);
+  color: #a855f7;
+}
+
+/* ── Sub Navigation Pills ───────────────────────────────────────── */
+.nav-pill {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.nav-pill:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+}
+.nav-pill.active-blue {
+  background: rgba(0, 112, 243, 0.15);
+  color: #60a5fa;
+  border-color: rgba(0, 112, 243, 0.3);
+}
+.nav-pill.active-purple {
+  background: rgba(138, 43, 226, 0.15);
+  color: #c084fc;
+  border-color: rgba(138, 43, 226, 0.3);
+}
+
+/* ── Spin loader ────────────────────────────────────────────────── */
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Markdown inside chat ───────────────────────────────────────── */
+.chat-markdown strong { color: #00d2ff; }
+.chat-markdown ul { list-style: disc; padding-left: 1.2rem; }
+.chat-markdown li { margin-bottom: 4px; }
+.chat-markdown code { background: rgba(0,210,255,0.1); border-radius: 4px; padding: 1px 6px; font-size: 0.85em; }
