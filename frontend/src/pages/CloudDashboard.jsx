@@ -1,239 +1,250 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Chatbot from '../components/Chatbot';
 import FloatingCompareDock from '../components/FloatingCompareDock';
 import ComparisonModal from '../components/ComparisonModal';
-import { api } from '../utils/api';
 
-const trendData = [
-  { name: 'Jan', aws: 0.040, azure: 0.045, gcp: 0.038, oci: 0.020, alibaba: 0.028 },
-  { name: 'Feb', aws: 0.042, azure: 0.046, gcp: 0.039, oci: 0.021, alibaba: 0.029 },
-  { name: 'Mar', aws: 0.043, azure: 0.048, gcp: 0.040, oci: 0.022, alibaba: 0.030 },
-  { name: 'Apr', aws: 0.045, azure: 0.050, gcp: 0.042, oci: 0.023, alibaba: 0.031 },
-  { name: 'May', aws: 0.046, azure: 0.052, gcp: 0.043, oci: 0.025, alibaba: 0.031 }
+const cloudServices = [
+  { provider: 'AWS EC2', pricing: '$0.046/hr', rating: 9.2, regions: ['US', 'EU', 'APAC'], icon: '☁️' },
+  { provider: 'Azure VM', pricing: '$0.052/hr', rating: 9.0, regions: ['US', 'EU', 'Asia'], icon: '☁️' },
+  { provider: 'GCP Compute', pricing: '$0.043/hr', rating: 9.0, regions: ['Global'], icon: '☁️' },
+  { provider: 'OCI Compute', pricing: '$0.025/hr', rating: 8.5, regions: ['US', 'EU'], icon: '☁️' },
+  { provider: 'Alibaba ECS', pricing: '$0.031/hr', rating: 8.6, regions: ['Asia', 'EU'], icon: '☁️' }
+];
+
+const cloudTrendData = [
+  { name: 'Jan', aws: 0.046, azure: 0.052, gcp: 0.043, oci: 0.025 },
+  { name: 'Feb', aws: 0.045, azure: 0.051, gcp: 0.042, oci: 0.024 },
+  { name: 'Mar', aws: 0.047, azure: 0.053, gcp: 0.044, oci: 0.025 },
+  { name: 'Apr', aws: 0.048, azure: 0.054, gcp: 0.045, oci: 0.026 },
+  { name: 'May', aws: 0.046, azure: 0.052, gcp: 0.043, oci: 0.025 },
+  { name: 'Jun', aws: 0.045, azure: 0.051, gcp: 0.042, oci: 0.024 },
+  { name: 'Jul', aws: 0.044, azure: 0.050, gcp: 0.041, oci: 0.024 },
+  { name: 'Aug', aws: 0.045, azure: 0.051, gcp: 0.042, oci: 0.025 },
+  { name: 'Sep', aws: 0.046, azure: 0.052, gcp: 0.043, oci: 0.025 },
+  { name: 'Oct', aws: 0.047, azure: 0.053, gcp: 0.044, oci: 0.026 },
+  { name: 'Nov', aws: 0.048, azure: 0.054, gcp: 0.045, oci: 0.027 },
+  { name: 'Dec', aws: 0.049, azure: 0.055, gcp: 0.046, oci: 0.028 }
+];
+
+const categories = ['Compute', 'Storage', 'Database', 'Networking', 'AI/ML', 'Kubernetes'];
+const regions = ['US East', 'US West', 'EU West', 'Asia Pacific', 'Middle East'];
+const countries = ['United States', 'Germany', 'India', 'Australia', 'UAE'];
+
+const recentComparisons = [
+  { title: 'AWS vs Azure', date: 'May 10, 2026', color: '#ff9900', icon: 'AWS' },
+  { title: 'GCP vs OCI', date: 'May 09, 2026', color: '#4285f4', icon: 'GCP' },
+  { title: 'AWS vs GCP', date: 'May 08, 2026', color: '#10b981', icon: 'AWS' },
+  { title: 'AWS vs Alibaba', date: 'May 07, 2026', color: '#f97316', icon: 'ALI' }
 ];
 
 export default function CloudDashboard() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('popular-services');
   const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('Compute');
+  const [selectedRegion, setSelectedRegion] = useState(regions[0]);
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [showCompareModal, setShowCompareModal] = useState(false);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
-    setLoading(true);
-    try {
-      const res = await api.cloudPopular();
-      if (res.success) setServices(res.data);
-    } catch (error) {
-      console.error("Failed to fetch cloud services:", error);
-    }
-    setLoading(false);
-  };
-
-  const handleScroll = (id) => {
-    setActiveTab(id);
-    const target = document.getElementById(`${id}-section`);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+  const filteredServices = useMemo(() => {
+    return cloudServices.filter((service) => {
+      const matchesRegion = service.regions.includes('Global') || service.regions.some((region) => selectedRegion.includes(region.split(' ')[0]) || region.includes(selectedRegion.split(' ')[0]));
+      return matchesRegion;
+    });
+  }, [selectedRegion]);
 
   const toggleServiceSelection = (service) => {
-    if (selectedServices.find(s => s.provider === service.provider && s.service === service.service)) {
-      setSelectedServices(selectedServices.filter(s => !(s.provider === service.provider && s.service === service.service)));
-    } else {
-      if (selectedServices.length < 5) {
-        setSelectedServices([...selectedServices, service]);
-      } else {
-        alert("You can only compare up to 5 services at once.");
-      }
+    const alreadySelected = selectedServices.some((item) => item.provider === service.provider);
+    if (alreadySelected) {
+      setSelectedServices(selectedServices.filter((item) => item.provider !== service.provider));
+    } else if (selectedServices.length < 5) {
+      setSelectedServices([...selectedServices, service]);
     }
-  };
-
-  const handleCompare = () => {
-    setShowCompareModal(true);
   };
 
   const formatCost = (value) => `$${value.toFixed(3)}`;
 
-  return (
-    <DashboardLayout context="cloud">
-      <div className="max-w-7xl mx-auto space-y-8" id="overview-section">
-        
-        {/* Header section */}
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Cloud Compare</h1>
-          <p className="text-gray-400 text-sm mb-6">Compare cloud providers, services, pricing, performance & regions.</p>
-        </div>
-
-        {/* Popular Cloud Services */}
-        <section id="popular-section" className="pt-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">Popular Cloud Services</h2>
-            <button className="text-xs text-neon-blue hover:text-white font-medium">View All</button>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {loading ? (
-              // Loading Skeletons
-              [...Array(5)].map((_, i) => (
-                <div key={i} className="glass-panel p-4 rounded-xl flex flex-col items-center text-center animate-pulse">
-                  <div className="w-16 h-12 bg-white/5 rounded mb-3"></div>
-                  <div className="h-4 w-20 bg-white/5 rounded mb-2"></div>
-                  <div className="h-3 w-16 bg-white/5 rounded mb-2"></div>
-                  <div className="h-3 w-24 bg-white/5 rounded mb-2"></div>
-                  <div className="h-3 w-12 bg-white/5 rounded"></div>
-                </div>
-              ))
-            ) : (
-              services.slice(0, 5).map((service, index) => {
-                const isSelected = selectedServices.some(s => s.provider === service.provider && s.service === service.service);
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'popular-services':
+        return (
+          <section className="animate-fade-in-up">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Popular Services</h2>
+                <p className="text-gray-400 text-sm">Compare pricing, ratings, and region coverage across the biggest cloud providers.</p>
+              </div>
+              <button onClick={() => setActiveSection('categories-regions')} className="px-4 py-2 rounded-xl bg-neon-blue/10 text-neon-blue text-sm font-semibold transition hover:bg-neon-blue/15">
+                Explore Categories
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
+              {cloudServices.map((service) => {
+                const isSelected = selectedServices.some((item) => item.provider === service.provider);
                 return (
-                  <div 
-                    key={index} 
-                    onClick={() => toggleServiceSelection(service)}
-                    className={`glass-panel p-4 rounded-xl transition-all duration-300 cursor-pointer group flex flex-col items-center text-center relative overflow-hidden ${isSelected ? 'border-neon-blue shadow-[0_0_15px_rgba(56,189,248,0.3)] bg-neon-blue/5' : 'hover:border-neon-blue/50'}`}
-                  >
-                    <div className="absolute top-2 left-2 z-20">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-neon-blue border-neon-blue text-white' : 'border-gray-500 text-transparent group-hover:border-neon-blue'}`}>
-                        {isSelected && <span className="text-[10px]">✓</span>}
+                  <div key={service.provider} onClick={() => toggleServiceSelection(service)} className={`glass-panel p-5 rounded-3xl border transition duration-300 cursor-pointer overflow-hidden ${isSelected ? 'border-neon-blue shadow-[0_0_25px_rgba(56,189,248,0.25)] bg-neon-blue/5' : 'hover:border-neon-blue/40'}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70">Cloud Service</p>
+                        <h3 className="text-xl font-semibold text-white mt-2">{service.provider}</h3>
+                      </div>
+                      <div className={`w-9 h-9 rounded-2xl border flex items-center justify-center ${isSelected ? 'bg-neon-blue border-neon-blue text-white' : 'border-gray-700 text-gray-500'}`}>
+                        {isSelected ? '✓' : '+'}
                       </div>
                     </div>
-
-                    <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="w-16 h-12 flex items-center justify-center mb-3 relative z-10 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.05)] group-hover:shadow-[0_0_20px_rgba(56,189,248,0.2)]">
-                      <span className="text-3xl">{service.logo || '☁️'}</span>
+                    <div className="text-sm text-gray-300 mb-4">{service.pricing}</div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {service.regions.map((region) => (
+                        <span key={region} className="px-3 py-1 rounded-full bg-white/5 text-gray-400 text-[11px]">{region}</span>
+                      ))}
                     </div>
-                    <h3 className="text-white font-bold text-sm relative z-10">{service.provider}</h3>
-                    <p className="text-gray-500 text-xs mb-2 relative z-10">{service.service}</p>
-                    <div className="text-xs text-gray-400 font-mono mb-2 bg-dark-900/50 px-2 py-0.5 rounded border border-gray-800">{service.pricing}</div>
-                    <div className="text-xs font-semibold text-[#f59e0b] relative z-10">★ {service.performance} <span className="text-gray-500 font-normal ml-1">🔥{service.popularity}</span></div>
+                    <div className="flex items-center justify-between text-sm text-gray-300">
+                      <span className="font-semibold text-white">{service.rating}</span>
+                      <span className="text-[#fbbf24]">{'★'.repeat(Math.round(service.rating))}</span>
+                    </div>
                   </div>
                 );
-              })
-            )}
-          </div>
-        </section>
+              })}
+            </div>
+          </section>
+        );
 
-        {/* 3 Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6" id="categories-section">
-          
-          {/* Col 1: Categories */}
-          <div className="lg:col-span-3 glass-panel rounded-xl p-5 h-full">
-            <h3 className="text-base font-bold text-white mb-4">Top Categories</h3>
-            <div className="space-y-1">
-              <div className="flex justify-between items-center py-2 px-3 bg-neon-blue/10 rounded-lg text-sm text-neon-blue font-medium cursor-pointer">
-                <span>Compute</span>
-                <span>28</span>
+      case 'categories-regions':
+        return (
+          <section className="animate-fade-in-up">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-5">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Categories & Regions</h2>
+                <p className="text-gray-400 text-sm">Use filters to narrow down cloud providers by category, region, and country.</p>
               </div>
-              <div className="flex justify-between items-center py-2 px-3 text-sm text-gray-400 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
-                <span>Storage</span>
-                <span>24</span>
-              </div>
-              <div className="flex justify-between items-center py-2 px-3 text-sm text-gray-400 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
-                <span>Database</span>
-                <span>18</span>
-              </div>
-              <div className="flex justify-between items-center py-2 px-3 text-sm text-gray-400 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
-                <span>Networking</span>
-                <span>20</span>
-              </div>
-              <div className="flex justify-between items-center py-2 px-3 text-sm text-gray-400 hover:bg-white/5 rounded-lg cursor-pointer transition-colors">
-                <span>AI / ML</span>
-                <span>16</span>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)} className="input-dark rounded-2xl px-4 py-3 text-sm bg-[#09090d] border border-white/10">
+                  {regions.map((region) => <option key={region} value={region}>{region}</option>)}
+                </select>
+                <select value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)} className="input-dark rounded-2xl px-4 py-3 text-sm bg-[#09090d] border border-white/10">
+                  {countries.map((country) => <option key={country} value={country}>{country}</option>)}
+                </select>
               </div>
             </div>
-            <button className="w-full mt-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium transition-colors">View All Categories</button>
-          </div>
-
-          {/* Col 2: Trend Graph */}
-          <div id="analysis-section" className="lg:col-span-6 glass-panel rounded-xl p-5 h-full flex flex-col pt-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-base font-bold text-white">Cloud Pricing Trend (2026)</h3>
-              <select className="bg-dark-900 border border-gray-700 text-xs rounded px-2 py-1 outline-none">
-                <option>2026</option>
-              </select>
+            <div className="flex flex-wrap gap-3 mb-6">
+              {categories.map((category) => (
+                <button key={category} type="button" onClick={() => setSelectedCategory(category)} className={`text-sm px-4 py-2 rounded-full transition ${selectedCategory === category ? 'bg-neon-blue/15 text-white border border-neon-blue' : 'bg-white/5 text-gray-300 hover:bg-white/10'}`}>
+                  {category}
+                </button>
+              ))}
             </div>
-            
-            <div className="flex gap-4 mb-4 text-xs font-medium">
-              <div className="flex items-center gap-1 text-[#ff9900]"><span className="w-2 h-2 bg-[#ff9900] rounded-full"></span> AWS</div>
-              <div className="flex items-center gap-1 text-[#00a4ef]"><span className="w-2 h-2 bg-[#00a4ef] rounded-full"></span> Azure</div>
-              <div className="flex items-center gap-1 text-[#4285f4]"><span className="w-2 h-2 bg-[#4285f4] rounded-full"></span> GCP</div>
-              <div className="flex items-center gap-1 text-[#f80000]"><span className="w-2 h-2 bg-[#f80000] rounded-full"></span> OCI</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredServices.map((service) => (
+                <div key={service.provider} className="glass-panel p-5 rounded-3xl border border-white/10 bg-white/5">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-white">{service.provider}</h3>
+                    <span className="text-xs text-gray-400">{service.pricing}</span>
+                  </div>
+                  <p className="text-sm text-gray-300 mb-4">Regions: {service.regions.join(', ')}</p>
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-400">
+                    <span className="px-2 py-1 rounded-full bg-white/5">Category: {selectedCategory}</span>
+                    <span className="px-2 py-1 rounded-full bg-white/5">Country: {selectedCountry}</span>
+                  </div>
+                </div>
+              ))}
             </div>
+          </section>
+        );
 
-            <div className="flex-1 min-h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" vertical={false} />
-                  <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis stroke="#64748b" tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={formatCost} axisLine={false} tickLine={false} width={60} />
-                  <Tooltip 
-                    formatter={(value) => [formatCost(value)]}
-                    contentStyle={{ backgroundColor: '#0e0e16', border: '1px solid #2a2a3a', borderRadius: '8px' }}
-                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                    labelStyle={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}
-                  />
-                  <Line type="monotone" dataKey="aws" stroke="#ff9900" strokeWidth={3} dot={{ fill: '#ff9900', strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="azure" stroke="#00a4ef" strokeWidth={3} dot={{ fill: '#00a4ef', strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="gcp" stroke="#4285f4" strokeWidth={3} dot={{ fill: '#4285f4', strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="oci" stroke="#f80000" strokeWidth={3} dot={{ fill: '#f80000', strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
+      case 'cloud-pricing-trend':
+        return (
+          <section className="animate-fade-in-up">
+            <div className="mb-5">
+              <h2 className="text-2xl font-bold text-white">Cloud Pricing Trend</h2>
+              <p className="text-gray-400 text-sm">Animated 2026 pricing trend for the major cloud providers.</p>
             </div>
-          </div>
-
-          {/* Col 3: Recent Comparisons */}
-          <div id="recent-section" className="lg:col-span-3 glass-panel rounded-xl p-5 h-full pt-4">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-base font-bold text-white">Recent Comparisons</h3>
-              <button className="text-xs text-neon-blue hover:text-white font-medium">View All</button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Item 1 */}
-              <div className="flex items-center gap-3 p-3 bg-dark-900 rounded-lg border border-gray-800 hover:border-gray-700 cursor-pointer transition-colors">
-                <div className="w-10 h-10 bg-[#ff9900]/20 rounded-lg flex items-center justify-center shrink-0 text-[#ff9900] text-xs font-bold">AWS</div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">AWS vs Azure</h4>
-                  <p className="text-[10px] text-gray-500">May 10, 2026 • 10:30 AM</p>
+            <div className="glass-panel rounded-3xl p-6 border border-white/10">
+              <div className="flex flex-wrap justify-between gap-4 mb-5">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-400">Year</p>
+                  <p className="text-white font-semibold">2026</p>
+                </div>
+                <div className="flex flex-wrap gap-3 text-xs text-gray-300">
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#ff9900]"></span>AWS</div>
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#00a4ef]"></span>Azure</div>
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#4285f4]"></span>GCP</div>
+                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#f80000]"></span>OCI</div>
                 </div>
               </div>
-
-              {/* Item 2 */}
-              <div className="flex items-center gap-3 p-3 bg-dark-900 rounded-lg border border-gray-800 hover:border-gray-700 cursor-pointer transition-colors">
-                <div className="w-10 h-10 bg-[#4285f4]/20 rounded-lg flex items-center justify-center shrink-0 text-[#4285f4] text-xs font-bold">GCP</div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">GCP vs OCI</h4>
-                  <p className="text-[10px] text-gray-500">May 09, 2026 • 08:45 PM</p>
-                </div>
+              <div className="min-h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={cloudTrendData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" vertical={false} />
+                    <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(3)}`} axisLine={false} tickLine={false} width={60} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0e0e16', border: '1px solid #2a2a3a', borderRadius: '12px' }} formatter={(value) => [`${formatCost(value)}`, 'Price']} />
+                    <Line type="monotone" dataKey="aws" stroke="#ff9900" strokeWidth={3} dot={{ r: 4, fill: '#ff9900' }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="azure" stroke="#00a4ef" strokeWidth={3} dot={{ r: 4, fill: '#00a4ef' }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="gcp" stroke="#4285f4" strokeWidth={3} dot={{ r: 4, fill: '#4285f4' }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="oci" stroke="#f80000" strokeWidth={3} dot={{ r: 4, fill: '#f80000' }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </div>
+          </section>
+        );
+
+      case 'recent-comparisons':
+        return (
+          <section className="animate-fade-in-up">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Recent Comparisons</h2>
+                <p className="text-gray-400 text-sm">Latest cloud comparison reports with provider icons and dates.</p>
+              </div>
+              <button className="px-4 py-2 rounded-xl bg-white/5 text-sm text-gray-300 transition hover:bg-white/10">View Full Report</button>
+            </div>
+            <div className="grid gap-4">
+              {recentComparisons.map((item) => (
+                <div key={item.title} className="glass-panel p-5 rounded-3xl border border-white/10 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-3xl bg-white/5 flex items-center justify-center text-white font-semibold text-sm border border-white/10">{item.icon}</div>
+                    <div>
+                      <p className="text-white font-semibold">{item.title}</p>
+                      <p className="text-xs text-gray-500">{item.date}</p>
+                    </div>
+                  </div>
+                  <button className="px-4 py-2 rounded-xl bg-neon-blue text-white text-sm transition hover:bg-neon-blue/90">View Report</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+
+      default:
+        return (
+          <section className="animate-fade-in-up">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {['popular-services', 'categories-regions', 'cloud-pricing-trend', 'recent-comparisons'].map((section) => (
+                <button key={section} onClick={() => setActiveSection(section)} className="glass-panel p-6 rounded-3xl border border-white/10 text-left hover:border-neon-blue/40 transition">
+                  <h3 className="text-lg font-semibold text-white">{section.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}</h3>
+                  <p className="text-sm text-gray-400 mt-2">Click to explore the {section.replace(/-/g, ' ')} section.</p>
+                </button>
+              ))}
+            </div>
+          </section>
+        );
+    }
+  };
+
+  return (
+    <DashboardLayout context="cloud" activeSection={activeSection} onSectionChange={setActiveSection}>
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Cloud Compare Dashboard</h1>
+          <p className="text-gray-400 text-sm">Use the sidebar to navigate the cloud dashboard sections without reloading.</p>
         </div>
-
+        {renderSection()}
       </div>
 
-      <FloatingCompareDock 
-        selectedItems={selectedServices} 
-        onRemove={toggleServiceSelection} 
-        onCompare={handleCompare} 
-        type="cloud" 
-      />
-
-      <ComparisonModal 
-        isOpen={showCompareModal}
-        onClose={() => setShowCompareModal(false)}
-        type="cloud"
-        selectedItems={selectedServices}
-      />
-
+      <FloatingCompareDock selectedItems={selectedServices} onRemove={(service) => toggleServiceSelection(service)} onCompare={() => setShowCompareModal(true)} type="cloud" />
+      <ComparisonModal isOpen={showCompareModal} onClose={() => setShowCompareModal(false)} type="cloud" selectedItems={selectedServices} />
       <Chatbot type="cloud" />
     </DashboardLayout>
   );

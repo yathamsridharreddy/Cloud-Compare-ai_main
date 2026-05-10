@@ -1,19 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
 
-export default function Sidebar({ context = 'ai' }) {
+export default function Sidebar({ context = 'ai', activeSection, onSectionSelect }) {
   const location = useLocation();
-  const isCloud = location.pathname.includes('cloud');
+  const isCloud = context === 'cloud' || location.pathname.includes('cloud');
   const userName = localStorage.getItem('userName') || 'User';
   const plan = "Pro Plan"; // Keep hardcoded for now or fetch if available
 
-  const handleScroll = (e, targetId) => {
-    e.preventDefault();
-    const target = document.getElementById(targetId);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleSectionSelect = (sectionKey) => {
+    if (typeof onSectionSelect === 'function') {
+      onSectionSelect(sectionKey);
     }
   };
-  
+
+  const getSectionClass = (sectionKey) => {
+    if (activeSection === sectionKey) {
+      return `sidebar-link ${isCloud ? 'active' : 'active-purple'}`;
+    }
+    return 'sidebar-link';
+  };
+
   return (
     <div className="w-64 h-screen fixed left-0 top-0 border-r border-white/5 bg-dark-900/80 backdrop-blur-xl flex flex-col z-40 hidden lg:flex">
       
@@ -54,22 +59,22 @@ export default function Sidebar({ context = 'ai' }) {
         <div>
           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">{isCloud ? 'Cloud' : 'AI Tools'}</div>
           <div className="space-y-1">
-            <a href="#popular-section" onClick={(e) => handleScroll(e, 'popular-section')} className="sidebar-link">
+            <button type="button" onClick={() => handleSectionSelect(isCloud ? 'popular-services' : 'popular-tools')} className={getSectionClass(isCloud ? 'popular-services' : 'popular-tools')}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               Popular {isCloud ? 'Services' : 'Tools'}
-            </a>
-            <a href="#categories-section" onClick={(e) => handleScroll(e, 'categories-section')} className="sidebar-link">
+            </button>
+            <button type="button" onClick={() => handleSectionSelect(isCloud ? 'categories-regions' : 'categories')} className={getSectionClass(isCloud ? 'categories-regions' : 'categories')}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
               Categories {isCloud ? '& Regions' : ''}
-            </a>
-            <a href="#analysis-section" onClick={(e) => handleScroll(e, 'analysis-section')} className="sidebar-link">
+            </button>
+            <button type="button" onClick={() => handleSectionSelect(isCloud ? 'cloud-pricing-trend' : 'ai-trend-analysis')} className={getSectionClass(isCloud ? 'cloud-pricing-trend' : 'ai-trend-analysis')}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
               {isCloud ? 'Cloud Pricing Trend' : 'AI Trend Analysis'}
-            </a>
-            <a href="#recent-section" onClick={(e) => handleScroll(e, 'recent-section')} className="sidebar-link">
+            </button>
+            <button type="button" onClick={() => handleSectionSelect('recent-comparisons')} className={getSectionClass('recent-comparisons')}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               Recent Comparisons
-            </a>
+            </button>
           </div>
         </div>
 

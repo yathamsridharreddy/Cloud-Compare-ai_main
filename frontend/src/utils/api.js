@@ -1,5 +1,7 @@
-// Centralised API helper — proxied through Vite to FastAPI on :8000
-const BASE = '/api'
+// Centralised API helper — handles both dev (proxied) and prod (direct API calls)
+const BASE = import.meta.env.PROD
+  ? 'https://cloud-compare-ai-main.onrender.com/api'
+  : '/api'
 
 function getToken() {
   return localStorage.getItem('token') || ''
