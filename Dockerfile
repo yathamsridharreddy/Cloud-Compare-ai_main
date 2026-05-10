@@ -1,16 +1,16 @@
-# Stage 1: Build
-FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
-WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-COPY src ./src
-RUN mvn clean package -DskipTests
+FROM python:3.11-slim
 
-# Stage 2: Runtime
-FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
 
-# UI EXCELLENCE: Minimize image size and attack surface
-EXPOSE 5000
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 10000
+
+# Start with gunicorn + uvicorn workers
+CMD ["gunicorn", "main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:10000"]
