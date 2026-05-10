@@ -9,3 +9,4 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.9
 tenacity==8.2.3
 email-validator
+gunicorn==21.2.0
