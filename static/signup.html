@@ -260,10 +260,11 @@
                 if (data.success && data.data && data.data.token) {
                     localStorage.setItem('token', data.data.token);
                     localStorage.setItem('userName', data.data.user.name);
+                    sessionStorage.setItem('justLoggedIn', 'true');
                     statusMsg.textContent = 'Account created! Redirecting...';
                     statusMsg.classList.add('alert-success');
                     statusMsg.style.display = 'block';
-                    setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+                    setTimeout(() => { window.location.assign(`${window.location.origin}/dashboard`); }, 1000);
                 } else {
                     const errMsg = data.error || (data.detail && (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail))) || 'Signup failed. Please try again.';
                     statusMsg.textContent = errMsg;

@@ -62,8 +62,7 @@ async def serve_react_app(full_path: str):
     index_file = os.path.join(dist_path, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
-    # Fallback if React not built
-    fallback = os.path.join("static", "index.html")
-    if os.path.exists(fallback):
-        return FileResponse(fallback)
-    return {"error": "Frontend not available. Run 'npm run build' inside frontend/"}
+    return {
+        "error": "React dashboard build not found.",
+        "fix": "Run 'npm run build' inside frontend/ before starting the backend, or check the Render build logs."
+    }

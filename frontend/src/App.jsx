@@ -6,13 +6,18 @@ import CloudDashboard from './pages/CloudDashboard';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
+  const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
 
-  if (!token) {
+  if (!token && !justLoggedIn) {
     const landingUrl = window.location.port.startsWith('517')
       ? 'http://127.0.0.1:8000/'
       : '/';
     window.location.replace(landingUrl);
     return null;
+  }
+
+  if (justLoggedIn) {
+    sessionStorage.removeItem('justLoggedIn');
   }
 
   return children;
