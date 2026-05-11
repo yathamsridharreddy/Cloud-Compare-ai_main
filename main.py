@@ -48,6 +48,10 @@ async def serve_login():
 async def serve_signup():
     return FileResponse("static/signup.html")
 
+@app.get("/dashboard.html")
+async def serve_dashboard_html():
+    return FileResponse("static/dashboard.html")
+
 # Serve React assets
 dist_path = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 if os.path.exists(dist_path):
@@ -62,7 +66,21 @@ if os.path.exists(dist_path):
         index_file = os.path.join(dist_path, "index.html")
         if os.path.exists(index_file):
             return FileResponse(index_file)
-        return {"error": "React frontend not built. Run 'npm run build' inside frontend/"}
+        # React not built — fall back to static dashboard
+        static_dashboard = os.path.join(os.path.dirname(__file__), "static", "dashboard.html")
+        if os.path.exists(static_dashboard):
+            return FileResponse(static_dashboard)
+        return {"error": "Frontend not built. Run 'cd frontend && npm run build'."}
 else:
-    # Fallback to the original static directory if React is not built
+    # React not built — serve explicit routes from static/
+    @app.get("/dashboard")
+    async def serve_dashboard_fallback():
+        return FileResponse("static/dashboard.html")
+
+    @app.get("/cloud-compare")
+    @app.get("/ai-tools")
+    async def serve_app_fallback():
+        return FileResponse("static/dashboard.html")
+
+    # Serve remaining static assets
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
