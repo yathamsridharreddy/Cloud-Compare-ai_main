@@ -12,6 +12,12 @@ export default function Sidebar({ context = 'ai', activeSection, onSectionSelect
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    window.location.href = '/login.html';
+  };
+
   const getSectionClass = (sectionKey) => {
     if (activeSection === sectionKey) {
       return `sidebar-link ${isCloud ? 'active' : 'active-purple'}`;
@@ -96,16 +102,17 @@ export default function Sidebar({ context = 'ai', activeSection, onSectionSelect
 
       {/* User Profile Footer */}
       <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3">
           <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`} alt={userName} className="w-9 h-9 rounded-full object-cover" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-white truncate">{userName}</p>
             <p className="text-xs text-gray-500 truncate">{plan}</p>
           </div>
-          <button className="text-gray-500 hover:text-white">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>
-          </button>
         </div>
+        <button onClick={handleLogout} className="w-full px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          Logout
+        </button>
       </div>
     </div>
   );
