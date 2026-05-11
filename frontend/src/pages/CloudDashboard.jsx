@@ -6,11 +6,11 @@ import FloatingCompareDock from '../components/FloatingCompareDock';
 import ComparisonModal from '../components/ComparisonModal';
 
 const cloudServices = [
+  { provider: 'Alibaba ECS', pricing: '$0.031/hr', rating: 8.6, regions: ['Asia', 'EU'], icon: '☁️' },
   { provider: 'AWS EC2', pricing: '$0.046/hr', rating: 9.2, regions: ['US', 'EU', 'APAC'], icon: '☁️' },
   { provider: 'Azure VM', pricing: '$0.052/hr', rating: 9.0, regions: ['US', 'EU', 'Asia'], icon: '☁️' },
   { provider: 'GCP Compute', pricing: '$0.043/hr', rating: 9.0, regions: ['Global'], icon: '☁️' },
-  { provider: 'OCI Compute', pricing: '$0.025/hr', rating: 8.5, regions: ['US', 'EU'], icon: '☁️' },
-  { provider: 'Alibaba ECS', pricing: '$0.031/hr', rating: 8.6, regions: ['Asia', 'EU'], icon: '☁️' }
+  { provider: 'OCI Compute', pricing: '$0.025/hr', rating: 8.5, regions: ['US', 'EU'], icon: '☁️' }
 ];
 
 const cloudTrendData = [
@@ -28,7 +28,7 @@ const cloudTrendData = [
   { name: 'Dec', aws: 0.049, azure: 0.055, gcp: 0.046, oci: 0.028 }
 ];
 
-const categories = ['Compute', 'Storage', 'Database', 'Networking', 'AI/ML', 'Kubernetes'];
+const categories = ['AI/ML', 'Compute', 'Database', 'Kubernetes', 'Networking', 'Storage'];
 const regions = ['US East', 'US West', 'EU West', 'Asia Pacific', 'Middle East'];
 const countries = ['United States', 'Germany', 'India', 'Australia', 'UAE'];
 

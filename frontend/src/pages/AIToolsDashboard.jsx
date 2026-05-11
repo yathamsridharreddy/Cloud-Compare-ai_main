@@ -54,7 +54,7 @@ const categoryToolMap = {
   ]
 };
 
-const categoryTabs = Object.keys(categoryToolMap);
+const categoryTabs = Object.keys(categoryToolMap).sort((a, b) => a.localeCompare(b));
 
 const aiTrendData = [
   { name: 'Jan', chatgpt: 42, claude: 32, gemini: 35, midjourney: 28 },
@@ -84,7 +84,7 @@ export default function AIToolsDashboard() {
   const [selectedTools, setSelectedTools] = useState([]);
   const [showCompareModal, setShowCompareModal] = useState(false);
 
-  const selectedCategoryTools = categoryToolMap[activeCategory];
+  const selectedCategoryTools = [...categoryToolMap[activeCategory]].sort((a, b) => a.name.localeCompare(b.name));
 
   const toggleToolSelection = (tool) => {
     const alreadySelected = selectedTools.some((item) => item.name === tool.name);
@@ -203,8 +203,8 @@ export default function AIToolsDashboard() {
                 </div>
               </div>
               <div className="min-h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={aiTrendData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={aiTrendData} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" vertical={false} />
                     <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} width={60} />

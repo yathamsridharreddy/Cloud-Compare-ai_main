@@ -48,6 +48,14 @@ async def serve_login():
 async def serve_signup():
     return FileResponse("static/signup.html")
 
+@app.get("/dashboard")
+async def serve_dashboard():
+    return FileResponse("static/dashboard.html")
+
+@app.get("/dashboard.html")
+async def serve_dashboard_html():
+    return FileResponse("static/dashboard.html")
+
 # Serve React assets
 dist_path = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 if os.path.exists(dist_path):
