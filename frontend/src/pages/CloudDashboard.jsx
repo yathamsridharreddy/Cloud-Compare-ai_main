@@ -173,8 +173,8 @@ export default function CloudDashboard() {
                 </div>
               </div>
               <div className="min-h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={cloudTrendData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={cloudTrendData} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" vertical={false} />
                     <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(3)}`} axisLine={false} tickLine={false} width={60} />
