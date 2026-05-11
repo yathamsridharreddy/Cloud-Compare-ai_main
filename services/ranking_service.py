@@ -1,4 +1,5 @@
 from typing import List, Dict, Any
+from services.cloud_catalog import find_cloud_service, PROVIDER_META, CATEGORY_ICONS
 
 HOURS_IN_MONTH = 730
 HOURS_IN_DAY = 24
@@ -54,21 +55,29 @@ def build_response(grok_results: List[Dict[str, Any]], category: str, service_ty
 
     for g in grok_results:
         provider = g.get("provider", "Unknown")
+        service_name = g.get("service_name", f"{provider} {service_type}")
+        catalog_match = find_cloud_service(provider, service_name)
+        provider_meta = PROVIDER_META.get(provider, {})
+        category_icon = CATEGORY_ICONS.get(catalog_match.get("category") if catalog_match else category, "☁️")
         # Use snake_case keys to match the existing frontend (script.js)
         merged[provider] = {
             "id": 0,
             "platform": provider,
-            "service_name": g.get("service_name", f"{provider} {service_type}"),
+            "service_name": service_name,
             "category": category,
             "cpu": safe_int(g.get("cpu")),
             "ram": safe_int(g.get("ram")),
             "storage": safe_int(g.get("storage")),
-            "price_per_hour": safe_float(g.get("price_per_hour")),
-            "price_per_gb": safe_float(g.get("price_per_gb")),
-            "performance_score": safe_float(g.get("performance_score")) or 7.0,
-            "popularity_score": safe_float(g.get("popularity_score")) or 7.0,
+            "price_per_hour": safe_float(g.get("price_per_hour")) or safe_float((catalog_match or {}).get("price_per_hour")),
+            "price_per_gb": safe_float(g.get("price_per_gb")) or safe_float((catalog_match or {}).get("price_per_gb")),
+            "performance_score": safe_float(g.get("performance_score")) or safe_float((catalog_match or {}).get("performance")) or 7.0,
+            "popularity_score": safe_float(g.get("popularity_score")) or safe_float((catalog_match or {}).get("popularity")) or 7.0,
             "region": g.get("region", REGION_DEFAULTS.get(provider, "global")),
-            "description": g.get("description", service_type)
+            "description": g.get("description") or (catalog_match or {}).get("desc", service_type),
+            "logo": provider_meta.get("logo", provider[:3].upper()),
+            "providerColor": provider_meta.get("color", "#38bdf8"),
+            "serviceIcon": (catalog_match or {}).get("icon", category_icon),
+            "categoryIcon": category_icon
         }
 
     if not selected_services:
@@ -78,7 +87,11 @@ def build_response(grok_results: List[Dict[str, Any]], category: str, service_ty
                     "id": 0, "platform": prov, "service_name": f"{prov} {service_type}", "category": category,
                     "cpu": 0, "ram": 0, "storage": 0, "price_per_hour": 0.0, "price_per_gb": 0.0,
                     "performance_score": 5.0, "popularity_score": 5.0, "region": REGION_DEFAULTS.get(prov, "global"),
-                    "description": f"{service_type} (data pending)"
+                    "description": f"{service_type} (data pending)",
+                    "logo": PROVIDER_META.get(prov, {}).get("logo", prov[:3].upper()),
+                    "providerColor": PROVIDER_META.get(prov, {}).get("color", "#38bdf8"),
+                    "serviceIcon": CATEGORY_ICONS.get(category, "☁️"),
+                    "categoryIcon": CATEGORY_ICONS.get(category, "☁️")
                 }
 
     results = list(merged.values())

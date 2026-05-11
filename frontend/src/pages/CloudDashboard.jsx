@@ -1,16 +1,27 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Chatbot from '../components/Chatbot';
 import FloatingCompareDock from '../components/FloatingCompareDock';
 import ComparisonModal from '../components/ComparisonModal';
+import { api } from '../utils/api';
 
-const cloudServices = [
-  { provider: 'Alibaba ECS', pricing: '$0.031/hr', rating: 8.6, regions: ['Asia', 'EU'], icon: '☁️' },
-  { provider: 'AWS EC2', pricing: '$0.046/hr', rating: 9.2, regions: ['US', 'EU', 'APAC'], icon: '☁️' },
-  { provider: 'Azure VM', pricing: '$0.052/hr', rating: 9.0, regions: ['US', 'EU', 'Asia'], icon: '☁️' },
-  { provider: 'GCP Compute', pricing: '$0.043/hr', rating: 9.0, regions: ['Global'], icon: '☁️' },
-  { provider: 'OCI Compute', pricing: '$0.025/hr', rating: 8.5, regions: ['US', 'EU'], icon: '☁️' }
+const fallbackCloudServices = [
+  { provider: 'AWS', service: 'EC2', category: 'Compute', pricing: '$0.046/hr', performance: 9.2, popularity: 98, regions: 32, regionTags: ['US', 'EU', 'APAC'], logo: 'AWS', providerColor: '#ff9900', icon: '🖥️', desc: 'Elastic Compute Cloud virtual machines with broad instance families and mature autoscaling.' },
+  { provider: 'Azure', service: 'Virtual Machines', category: 'Compute', pricing: '$0.052/hr', performance: 8.9, popularity: 95, regions: 60, regionTags: ['US', 'EU', 'Asia'], logo: 'AZ', providerColor: '#0078d4', icon: '🖥️', desc: 'Enterprise VMs with strong Windows, Active Directory, and hybrid cloud integration.' },
+  { provider: 'GCP', service: 'Compute Engine', category: 'Compute', pricing: '$0.043/hr', performance: 9.0, popularity: 88, regions: 40, regionTags: ['Global'], logo: 'GCP', providerColor: '#4285f4', icon: '🖥️', desc: 'Flexible Google Cloud VMs with custom machine types and strong sustained-use pricing.' },
+  { provider: 'OCI', service: 'Compute', category: 'Compute', pricing: '$0.025/hr', performance: 9.4, popularity: 72, regions: 48, regionTags: ['US', 'EU', 'Asia'], logo: 'OCI', providerColor: '#f80000', icon: '🖥️', desc: 'High-performance virtual machines and bare metal instances with aggressive pricing.' },
+  { provider: 'Alibaba', service: 'ECS', category: 'Compute', pricing: '$0.031/hr', performance: 8.5, popularity: 76, regions: 28, regionTags: ['Asia', 'EU'], logo: 'ALI', providerColor: '#ff6a00', icon: '🖥️', desc: 'Elastic Compute Service for Asia-Pacific workloads, especially China and Southeast Asia.' },
+  { provider: 'AWS', service: 'Lambda', category: 'Serverless', pricing: '$0.20/1M req', performance: 9.2, popularity: 97, regions: 32, regionTags: ['Global'], logo: 'AWS', providerColor: '#ff9900', icon: '⚡', desc: 'Event-driven functions with deep AWS integrations and broad runtime support.' },
+  { provider: 'AWS', service: 'S3', category: 'Storage', pricing: '$0.023/GB', performance: 9.5, popularity: 99, regions: 32, regionTags: ['Global'], logo: 'AWS', providerColor: '#ff9900', icon: '🗄️', desc: 'The reference object storage service with extreme durability and ecosystem support.' },
+  { provider: 'Azure', service: 'Blob Storage', category: 'Storage', pricing: '$0.018/GB', performance: 9.0, popularity: 92, regions: 60, regionTags: ['Global'], logo: 'AZ', providerColor: '#0078d4', icon: '🗄️', desc: 'Scalable object storage with hot, cool, archive, and geo-redundant tiers.' },
+  { provider: 'GCP', service: 'Cloud Storage', category: 'Storage', pricing: '$0.020/GB', performance: 9.2, popularity: 87, regions: 40, regionTags: ['Global'], logo: 'GCP', providerColor: '#4285f4', icon: '🗄️', desc: 'Strongly consistent object storage with multi-region and analytics-friendly options.' },
+  { provider: 'AWS', service: 'RDS', category: 'Database', pricing: '$0.017/hr', performance: 9.1, popularity: 96, regions: 32, regionTags: ['Global'], logo: 'AWS', providerColor: '#ff9900', icon: '🛢️', desc: 'Managed relational databases for PostgreSQL, MySQL, MariaDB, Oracle, and SQL Server.' },
+  { provider: 'AWS', service: 'EKS', category: 'Kubernetes', pricing: '$0.10/hr', performance: 9.1, popularity: 95, regions: 32, regionTags: ['Global'], logo: 'AWS', providerColor: '#ff9900', icon: '☸️', desc: 'Managed Kubernetes with deep AWS networking, IAM, and autoscaling integration.' },
+  { provider: 'GCP', service: 'GKE', category: 'Kubernetes', pricing: '$0.10/hr', performance: 9.6, popularity: 91, regions: 40, regionTags: ['Global'], logo: 'GCP', providerColor: '#4285f4', icon: '☸️', desc: 'Highly mature managed Kubernetes from the original Kubernetes creators.' },
+  { provider: 'AWS', service: 'VPC', category: 'Networking', pricing: 'Usage based', performance: 9.0, popularity: 98, regions: 32, regionTags: ['Global'], logo: 'AWS', providerColor: '#ff9900', icon: '🌐', desc: 'Foundational virtual networking for subnets, routing, gateways, and private access.' },
+  { provider: 'AWS', service: 'SageMaker', category: 'AI/ML', pricing: '$0.065/hr', performance: 9.3, popularity: 94, regions: 32, regionTags: ['Global'], logo: 'AWS', providerColor: '#ff9900', icon: '🧠', desc: 'End-to-end ML platform for training, deployment, MLOps, and model monitoring.' },
+  { provider: 'GCP', service: 'Vertex AI', category: 'AI/ML', pricing: 'Usage based', performance: 9.4, popularity: 89, regions: 40, regionTags: ['Global'], logo: 'GCP', providerColor: '#4285f4', icon: '🧠', desc: "Google's unified ML and generative AI platform with strong model operations." },
 ];
 
 const cloudTrendData = [
@@ -28,7 +39,7 @@ const cloudTrendData = [
   { name: 'Dec', aws: 0.049, azure: 0.055, gcp: 0.046, oci: 0.028 }
 ];
 
-const categories = ['AI/ML', 'Compute', 'Database', 'Kubernetes', 'Networking', 'Storage'];
+const categories = ['AI/ML', 'Compute', 'Database', 'Kubernetes', 'Networking', 'Serverless', 'Storage'];
 const regions = ['US East', 'US West', 'EU West', 'Asia Pacific', 'Middle East'];
 const countries = ['United States', 'Germany', 'India', 'Australia', 'UAE'];
 
@@ -39,25 +50,53 @@ const recentComparisons = [
   { title: 'AWS vs Alibaba', date: 'May 07, 2026', color: '#f97316', icon: 'ALI' }
 ];
 
+function ServiceIcon({ service, size = 'md' }) {
+  const dimensions = size === 'lg' ? 'w-14 h-14 rounded-3xl' : 'w-12 h-12 rounded-2xl';
+  return (
+    <div className={`${dimensions} border border-white/10 bg-white/5 flex items-center justify-center shrink-0 relative overflow-hidden`}>
+      <span className="absolute inset-x-0 bottom-0 h-1" style={{ backgroundColor: service.providerColor || service.color || '#38bdf8' }}></span>
+      <span className="text-xl leading-none">{service.icon || service.categoryIcon || '☁️'}</span>
+    </div>
+  );
+}
+
 export default function CloudDashboard() {
   const [activeSection, setActiveSection] = useState('popular-services');
+  const [cloudServices, setCloudServices] = useState(fallbackCloudServices);
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('Compute');
   const [selectedRegion, setSelectedRegion] = useState(regions[0]);
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [showCompareModal, setShowCompareModal] = useState(false);
 
+  useEffect(() => {
+    let mounted = true;
+    api.cloudPopular().then((res) => {
+      if (mounted && res.success && Array.isArray(res.data)) {
+        setCloudServices(res.data);
+      }
+    }).catch(() => {
+      setCloudServices(fallbackCloudServices);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const filteredServices = useMemo(() => {
     return cloudServices.filter((service) => {
-      const matchesRegion = service.regions.includes('Global') || service.regions.some((region) => selectedRegion.includes(region.split(' ')[0]) || region.includes(selectedRegion.split(' ')[0]));
-      return matchesRegion;
+      const regionTags = service.regionTags || service.regions || [];
+      const matchesRegion = Array.isArray(regionTags)
+        ? regionTags.includes('Global') || regionTags.some((region) => selectedRegion.includes(region.split(' ')[0]) || region.includes(selectedRegion.split(' ')[0]))
+        : true;
+      return matchesRegion && service.category === selectedCategory;
     });
-  }, [selectedRegion]);
+  }, [cloudServices, selectedCategory, selectedRegion]);
 
   const toggleServiceSelection = (service) => {
-    const alreadySelected = selectedServices.some((item) => item.provider === service.provider);
+    const alreadySelected = selectedServices.some((item) => `${item.provider}-${item.service}` === `${service.provider}-${service.service}`);
     if (alreadySelected) {
-      setSelectedServices(selectedServices.filter((item) => item.provider !== service.provider));
+      setSelectedServices(selectedServices.filter((item) => `${item.provider}-${item.service}` !== `${service.provider}-${service.service}`));
     } else if (selectedServices.length < 5) {
       setSelectedServices([...selectedServices, service]);
     }
@@ -81,27 +120,33 @@ export default function CloudDashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-4">
               {cloudServices.map((service) => {
-                const isSelected = selectedServices.some((item) => item.provider === service.provider);
+                const isSelected = selectedServices.some((item) => `${item.provider}-${item.service}` === `${service.provider}-${service.service}`);
                 return (
-                  <div key={service.provider} onClick={() => toggleServiceSelection(service)} className={`glass-panel p-5 rounded-3xl border transition duration-300 cursor-pointer overflow-hidden ${isSelected ? 'border-neon-blue shadow-[0_0_25px_rgba(56,189,248,0.25)] bg-neon-blue/5' : 'hover:border-neon-blue/40'}`}>
+                  <div key={`${service.provider}-${service.service}`} onClick={() => toggleServiceSelection(service)} className={`glass-panel p-5 rounded-3xl border transition duration-300 cursor-pointer overflow-hidden ${isSelected ? 'border-neon-blue shadow-[0_0_25px_rgba(56,189,248,0.25)] bg-neon-blue/5' : 'hover:border-neon-blue/40'}`}>
                     <div className="flex justify-between items-start mb-4">
-                      <div>
+                      <div className="flex items-start gap-3">
+                        <ServiceIcon service={service} />
+                        <div>
                         <p className="text-xs uppercase tracking-[0.24em] text-cyan-200/70">Cloud Service</p>
-                        <h3 className="text-xl font-semibold text-white mt-2">{service.provider}</h3>
+                        <h3 className="text-xl font-semibold text-white mt-2">{service.service}</h3>
+                        <p className="text-sm font-semibold" style={{ color: service.providerColor || '#38bdf8' }}>{service.provider}</p>
+                        </div>
                       </div>
                       <div className={`w-9 h-9 rounded-2xl border flex items-center justify-center ${isSelected ? 'bg-neon-blue border-neon-blue text-white' : 'border-gray-700 text-gray-500'}`}>
                         {isSelected ? '✓' : '+'}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-300 mb-4">{service.pricing}</div>
+                    <div className="text-sm text-gray-300 mb-3">{service.pricing}</div>
+                    <p className="text-xs text-gray-400 leading-5 mb-4">{service.desc}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {service.regions.map((region) => (
+                      {(service.regionTags || []).map((region) => (
                         <span key={region} className="px-3 py-1 rounded-full bg-white/5 text-gray-400 text-[11px]">{region}</span>
                       ))}
+                      <span className="px-3 py-1 rounded-full bg-white/5 text-gray-400 text-[11px]">{service.category}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-gray-300">
-                      <span className="font-semibold text-white">{service.rating}</span>
-                      <span className="text-[#fbbf24]">{'★'.repeat(Math.round(service.rating))}</span>
+                      <span className="font-semibold text-white">{service.performance}</span>
+                      <span className="text-[#fbbf24]">{'★'.repeat(Math.min(5, Math.round((service.performance || 0) / 2)))}</span>
                     </div>
                   </div>
                 );
@@ -136,15 +181,22 @@ export default function CloudDashboard() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredServices.map((service) => (
-                <div key={service.provider} className="glass-panel p-5 rounded-3xl border border-white/10 bg-white/5">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-white">{service.provider}</h3>
+                <div key={`${service.provider}-${service.service}`} className="glass-panel p-5 rounded-3xl border border-white/10 bg-white/5">
+                  <div className="flex justify-between items-center mb-4 gap-4">
+                    <div className="flex items-center gap-3">
+                      <ServiceIcon service={service} />
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{service.service}</h3>
+                        <p className="text-xs" style={{ color: service.providerColor || '#38bdf8' }}>{service.provider}</p>
+                      </div>
+                    </div>
                     <span className="text-xs text-gray-400">{service.pricing}</span>
                   </div>
-                  <p className="text-sm text-gray-300 mb-4">Regions: {service.regions.join(', ')}</p>
+                  <p className="text-sm text-gray-300 mb-4">{service.desc}</p>
                   <div className="flex flex-wrap gap-2 text-xs text-gray-400">
                     <span className="px-2 py-1 rounded-full bg-white/5">Category: {selectedCategory}</span>
                     <span className="px-2 py-1 rounded-full bg-white/5">Country: {selectedCountry}</span>
+                    <span className="px-2 py-1 rounded-full bg-white/5">{service.regions} regions</span>
                   </div>
                 </div>
               ))}

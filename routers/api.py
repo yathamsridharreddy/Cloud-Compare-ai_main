@@ -7,6 +7,7 @@ from services.grok_client import fetch_comparison_from_grok, fetch_ai_tools_comp
 from services.ranking_service import build_response
 from services.ai_tools_service import get_popular_tools, get_categories, get_tools_by_category
 from services.chat_service import chat as groq_chat
+from services.cloud_catalog import get_cloud_services
 
 router = APIRouter()
 
@@ -74,21 +75,7 @@ async def ai_tools_by_category(category: str):
 # ── Cloud popular services (new) ──────────────────────────────────────────────
 @router.get("/cloud/popular", response_model=ApiResponse)
 async def cloud_popular():
-    services = [
-        {"provider": "AWS",     "service": "EC2",              "category": "Compute",  "pricing": "$0.046/hr", "performance": 9.2, "popularity": 98, "regions": 32, "logo": "☁️",  "desc": "Industry-leading virtual machines with unlimited scale and 32 global regions."},
-        {"provider": "Azure",   "service": "Virtual Machines", "category": "Compute",  "pricing": "$0.052/hr", "performance": 8.9, "popularity": 95, "regions": 60, "logo": "🔷", "desc": "Enterprise-grade VMs with seamless Active Directory and Office 365 integration."},
-        {"provider": "GCP",     "service": "Compute Engine",   "category": "Compute",  "pricing": "$0.043/hr", "performance": 9.0, "popularity": 88, "regions": 40, "logo": "🌐", "desc": "Google-powered VMs running on the same infra as Gmail and YouTube."},
-        {"provider": "OCI",     "service": "Compute",          "category": "Compute",  "pricing": "$0.025/hr", "performance": 9.4, "popularity": 72, "regions": 48, "logo": "🔴", "desc": "Highest bare-metal performance at the lowest price with always-free tier."},
-        {"provider": "Alibaba", "service": "ECS",              "category": "Compute",  "pricing": "$0.031/hr", "performance": 8.5, "popularity": 76, "regions": 28, "logo": "🟠", "desc": "Dominant Asia-Pacific cloud with unmatched coverage across China and SEA."},
-        {"provider": "AWS",     "service": "S3",               "category": "Storage",  "pricing": "$0.023/GB", "performance": 9.5, "popularity": 99, "regions": 32, "logo": "☁️",  "desc": "World's most popular object storage with 99.999999999% durability."},
-        {"provider": "Azure",   "service": "Blob Storage",     "category": "Storage",  "pricing": "$0.018/GB", "performance": 9.0, "popularity": 92, "regions": 60, "logo": "🔷", "desc": "Massively scalable Azure storage with tiered pricing and geo-redundancy."},
-        {"provider": "GCP",     "service": "Cloud Storage",    "category": "Storage",  "pricing": "$0.020/GB", "performance": 9.2, "popularity": 87, "regions": 40, "logo": "🌐", "desc": "Unified Google object storage with strong consistency and multi-region options."},
-        {"provider": "AWS",     "service": "EKS",              "category": "Kubernetes","pricing": "$0.10/hr",  "performance": 9.1, "popularity": 95, "regions": 32, "logo": "☁️",  "desc": "Managed Kubernetes with deep AWS ecosystem integration and auto-scaling."},
-        {"provider": "GCP",     "service": "GKE",              "category": "Kubernetes","pricing": "$0.10/hr",  "performance": 9.6, "popularity": 91, "regions": 40, "logo": "🌐", "desc": "Kubernetes invented by Google — the most mature managed K8s service."},
-        {"provider": "Azure",   "service": "AKS",              "category": "Kubernetes","pricing": "Free mgmt", "performance": 8.8, "popularity": 89, "regions": 60, "logo": "🔷", "desc": "Free managed Kubernetes control plane with enterprise Active Directory auth."},
-        {"provider": "AWS",     "service": "SageMaker",        "category": "AI/ML",    "pricing": "$0.065/hr", "performance": 9.3, "popularity": 94, "regions": 32, "logo": "☁️",  "desc": "End-to-end ML platform for training, deploying and monitoring AI models at scale."},
-    ]
-    return ApiResponse(success=True, data=services)
+    return ApiResponse(success=True, data=get_cloud_services())
 
 # ── Chatbot (new) ─────────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):

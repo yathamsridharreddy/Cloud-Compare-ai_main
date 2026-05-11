@@ -19,7 +19,7 @@ export default function FloatingCompareDock({ selectedItems, onRemove, onCompare
                 className="w-10 h-10 rounded-full bg-dark-800 border-2 border-dark-900 flex items-center justify-center relative group cursor-pointer"
                 onClick={() => onRemove(item)}
               >
-                <span className="text-lg">{item.logo || (type === 'ai' ? '🤖' : '☁️')}</span>
+                <span className="text-lg">{item.icon || item.serviceIcon || item.logo || (type === 'ai' ? '🤖' : '☁️')}</span>
                 <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   ×
                 </div>

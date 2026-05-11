@@ -23,8 +23,9 @@ export default function ComparisonModal({ isOpen, onClose, type, selectedItems }
           setData(res.data);
         }
       } else {
-        const itemNames = selectedItems.map(item => `${item.provider} ${item.service}`);
-        const res = await api.cloudCompare({ category: "Compute", selected_services: itemNames, hours: 730 });
+        const category = selectedItems[0]?.category || "Compute";
+        const itemNames = selectedItems.map(item => `${item.provider} ${item.service || item.service_name || ''}`.trim());
+        const res = await api.cloudCompare({ category, serviceType: "all", selected_services: itemNames, hours: 730 });
         if (res.success) {
           setData(res.data);
         }
@@ -36,6 +37,10 @@ export default function ComparisonModal({ isOpen, onClose, type, selectedItems }
   };
 
   if (!isOpen) return null;
+
+  const iconForRow = (row) => row?.serviceIcon || row?.categoryIcon || row?.icon || (type === 'ai' ? '🤖' : '☁️');
+  const labelForRow = (row) => type === 'ai' ? row.tool_name : row.service_name;
+  const providerForRow = (row) => type === 'ai' ? row.provider : row.platform;
 
   return (
     <AnimatePresence>
@@ -83,9 +88,16 @@ export default function ComparisonModal({ isOpen, onClose, type, selectedItems }
                 {/* Winner / Recommendation Banner */}
                 {data.recommendation || (data.tools && data.tools[0]) ? (
                   <div className={`p-6 rounded-xl border ${type === 'ai' ? 'bg-neon-purple/10 border-neon-purple/30' : 'bg-neon-blue/10 border-neon-blue/30'} flex gap-6 items-start`}>
-                    <div className="text-4xl">🏆</div>
+                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl shrink-0">
+                      {type === 'ai' ? '🏆' : iconForRow(data.recommendation)}
+                    </div>
                     <div>
                       <h3 className="text-lg font-bold text-white mb-2">AI Recommendation</h3>
+                      {type !== 'ai' && data.recommendation ? (
+                        <p className="text-sm font-semibold mb-2" style={{ color: data.recommendation.providerColor || '#38bdf8' }}>
+                          {data.recommendation.platform} {data.recommendation.service_name}
+                        </p>
+                      ) : null}
                       <p className="text-gray-300">
                         {type === 'ai' 
                           ? data.tools[0]?.description 
@@ -151,8 +163,13 @@ export default function ComparisonModal({ isOpen, onClose, type, selectedItems }
                       <tbody>
                         {(type === 'ai' ? data.tools : data.services)?.map((row, idx) => (
                           <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02]">
-                            <td className="px-6 py-4 font-bold text-white">{type === 'ai' ? row.tool_name : row.platform}</td>
-                            <td className="px-6 py-4">{type === 'ai' ? row.provider : row.service_name}</td>
+                            <td className="px-6 py-4 font-bold text-white">
+                              <div className="flex items-center gap-3">
+                                <span className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-lg">{iconForRow(row)}</span>
+                                <span>{providerForRow(row)}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">{labelForRow(row)}</td>
                             <td className="px-6 py-4 text-[#f59e0b] font-mono">{type === 'ai' ? row.pricing : `$${row.price_per_hour}/hr`}</td>
                             <td className="px-6 py-4 font-bold">{type === 'ai' ? row.score : row.performance_score}</td>
                             <td className="px-6 py-4 text-xs">{row.description}</td>

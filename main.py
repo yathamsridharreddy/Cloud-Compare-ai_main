@@ -31,15 +31,18 @@ app.include_router(api.router, prefix="/api", tags=["api"])
 
 import os
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles as FS
 
 # Serve the old static files explicitly at /static path so login.html is accessible
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Expose explicit static pages
-@app.get("/")
-async def serve_landing():
-    return FileResponse("static/index.html")
+# Serve React built assets (always mount if exists)
+dist_path = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+assets_path = os.path.join(dist_path, "assets")
+if os.path.exists(assets_path):
+    app.mount("/assets", FS(directory=assets_path), name="assets")
 
+# Explicit static HTML pages
 @app.get("/login.html")
 async def serve_login():
     return FileResponse("static/login.html")
@@ -48,21 +51,19 @@ async def serve_login():
 async def serve_signup():
     return FileResponse("static/signup.html")
 
-# Serve React assets
-dist_path = os.path.join(os.path.dirname(__file__), "frontend", "dist")
-if os.path.exists(dist_path):
-    # Mount the assets directory from Vite build
-    assets_path = os.path.join(dist_path, "assets")
-    if os.path.exists(assets_path):
-        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+# Root landing page (static HTML)
+@app.get("/")
+async def serve_landing():
+    return FileResponse("static/index.html")
 
-    # Catch-all for SPA routing to serve React's index.html
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
-        index_file = os.path.join(dist_path, "index.html")
-        if os.path.exists(index_file):
-            return FileResponse(index_file)
-        return {"error": "React frontend not built. Run 'npm run build' inside frontend/"}
-else:
-    # Fallback to the original static directory if React is not built
-    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# Catch-all: ALWAYS registered — serves React SPA for all other routes (e.g. /dashboard, /ai-tools)
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    index_file = os.path.join(dist_path, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    # Fallback if React not built
+    fallback = os.path.join("static", "index.html")
+    if os.path.exists(fallback):
+        return FileResponse(fallback)
+    return {"error": "Frontend not available. Run 'npm run build' inside frontend/"}
